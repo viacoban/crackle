@@ -13,6 +13,7 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'clojure'
 apply plugin: 'idea'
+apply plugin: 'maven'
 
 repositories {
   mavenCentral()
@@ -32,3 +33,16 @@ dependencies {
 }
 
 compileClojure.dependsOn compileJava
+
+task writePom << {
+  pom {
+    project {
+      licenses {
+        license {
+          name 'Eclipse Public License'
+          url 'http://www.eclipse.org/legal/epl-v10.html'
+        }
+      }
+    }
+  }.writeTo("$buildDir/pom.xml")
+}

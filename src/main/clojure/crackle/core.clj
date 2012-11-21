@@ -4,6 +4,12 @@
 (defn pair-of [one two]
   (org.apache.crunch.Pair/of one two))
 
+(def simple-type
+  (crackle.ClojureTypes/getSimpleType))
+
+(def table-type
+  (crackle.ClojureTypes/getTableType))
+
 (defn- gen-do-fn [input-fn]
   (defclass MyDoFn [] :extends org.apache.crunch.DoFn
     (process [_ input emitter]
@@ -13,12 +19,12 @@
 (defn- gen-combine-fn [combine-fn]
   (defclass MyCombineFn [] :extends org.apache.crunch.CombineFn
     (process [_ pair emitter]
-      (.emit emitter (pair-of (:first pair) (reduce combine-fn (:second pair)))))))
+      (.emit emitter (pair-of (.first pair) (reduce combine-fn (.second pair)))))))
 
 (defn- gen-map-value-fn [value-fn]
   (defclass MyValueMapFn [] :extends org.apache.crunch.MapFn
     (map ^org.apache.crunch.Pair [_ pair]
-      (pair-of (:first pair) (value-fn (:second pair))))))
+      (pair-of (.first pair) (value-fn (.second pair))))))
 
 (defn- gen-map-entry-fn [map-fn]
   (defclass MyEntryMapFn [] :extends org.apache.crunch.MapFn
@@ -36,26 +42,32 @@
          (.write ~target))
        (.done pipeline#))))
 
-(defn =each-to-seq [pcoll input-fn]
-  (.parallelDo pcoll (.newInstance (gen-do-fn input-fn)) (crackle.ClojureTypes/getType)))
+(defn =each-as-seq
+  ([pcoll input-fn]
+    (=each-as-seq simple-type))
+  ([pcoll input-fn type]
+    (.parallelDo pcoll (.newInstance (gen-do-fn input-fn)) type)))
 
-(defn =each [pcoll map-fn]
-  (.parallelDo pcoll (.newInstance (gen-map-entry-fn map-fn)) (crackle.ClojureTypes/getType)))
+(defn =each
+  ([pcoll map-fn]
+    (=each pcoll map-fn simple-type))
+  ([pcoll map-fn type]
+    (.parallelDo pcoll (.newInstance (gen-map-entry-fn map-fn)) type)))
 
 (defn =count [pcoll]
   (.count pcoll))
 
 (defn =combine-values [pcoll combine-fn]
-  (.combineValues (.newInstance (gen-combine-fn combine-fn))))
+  (.combineValues pcoll (.newInstance (gen-combine-fn combine-fn))))
 
 (defn =by [pcoll key-fn]
-  (.by (.newInstance (gen-map-entry-fn key-fn)) (crackle.ClojureTypes/getType)))
+  (.by pcoll (.newInstance (gen-map-entry-fn key-fn)) table-type))
 
 (defn =map-value [pcoll value-fn]
-  (.parallelDo (.newInstance (gen-map-value-fn value-fn)) (crackle.ClojureTypes/getType)))
+  (.parallelDo pcoll (.newInstance (gen-map-value-fn value-fn)) simple-type))
 
 (defn =filter [pcoll filter-fn]
-  (.filter (.newInstance (gen-filter-fn filter-fn))))
+  (.filter pcoll (.newInstance (gen-filter-fn filter-fn))))
 
 (defn =sort [pcoll ascending?]
   (.sort pcoll ascending?))

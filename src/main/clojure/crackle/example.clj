@@ -7,13 +7,13 @@
 
 (defn count-words [input-path output-path]
   (mem-pipeline (from-txt input-path) (to-txt output-path)
-    (=each-to-seq split-words)
+    (=each-as-seq split-words)
     (=count)))
 
 ;====== average bytes by ip ==============
 (defn parse-line [line]
   (let [parts (split-words line)]
-    (pair-of (first parts) [(second parts) 1])))
+    (pair-of (first parts) [(read-string (second parts)) 1])))
 
 (defn sum-pairs [a b]
   [(+ (first a) (first b)) (+ (second a) (second b))])
@@ -23,7 +23,7 @@
 
 (defn count-bytes-by-ip [input-path output-path]
   (mem-pipeline (from-txt input-path) (to-txt output-path)
-    (=each parse-line)
+    (=each parse-line table-type)
     (=group-by-key)
     (=combine-values sum-pairs)
     (=map-value compute-average)))

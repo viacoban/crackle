@@ -8,6 +8,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import java.nio.ByteBuffer;
 import org.apache.crunch.MapFn;
+import org.apache.crunch.types.PTableType;
 import org.apache.crunch.types.PType;
 import org.apache.crunch.types.writable.Writables;
 
@@ -40,14 +41,19 @@ public final class ClojureTypes {
     }
   };
 
-  private static final PType<Object> TYPE = Writables.derived(
-    Object.class, INPUT_FN, OUTPUT_FN, Writables.bytes()
-  );
+  private static final PType<Object> SIMPLE_TYPE =
+    Writables.derived(Object.class, INPUT_FN, OUTPUT_FN, Writables.bytes());
+
+  private static final PTableType<Object, Object> TABLE_TYPE =
+    Writables.tableOf(SIMPLE_TYPE, SIMPLE_TYPE);
 
   private ClojureTypes() { }
 
-  public static PType<Object> getType() {
-    return TYPE;
+  public static PType<Object> getSimpleType() {
+    return SIMPLE_TYPE;
   }
 
+  public static PTableType<Object, Object> getTableType() {
+    return TABLE_TYPE;
+  }
 }

@@ -5,7 +5,21 @@ A Clojure wrapper around [Apache Crunch](http://incubator.apache.org/crunch/)
 
 ## Installation
 
-Crackle binaries not available yet, you'll have to build it yourself, with [gradle](http://gradle.org/)
+Crackle is available on Clojars, with Leiningen:
+
+```clj
+  [crackle "0.1.0"]
+```
+
+with Maven:
+
+```xml
+  <dependency>
+    <groupId>crackle</groupId>
+    <artifactId>crackle</artifactId>
+    <version>0.1.0</version>
+  </dependency>
+```
 
 ## Usage
 
