@@ -3,9 +3,9 @@
 A Clojure wrapper around [Apache Crunch](http://incubator.apache.org/crunch/)
 
 
-## Instalation
+## Installation
 
-Crackle binaries not available yet, you'll have to build it yourself using [gradle](http://gradle.org/)
+Crackle binaries not available yet, you'll have to build it yourself, with [gradle](http://gradle.org/)
 
 ## Usage
 
