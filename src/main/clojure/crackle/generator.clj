@@ -3,15 +3,18 @@
   (:use [shady.defclass :only [defclass]]))
 
 (defn- emitter-fn [emitter]
-  (fn [o] (.emit emitter o)))
+  (fn [v] (.emit emitter v)))
 
 (defn gen-do-fn [input-fn]
   (defclass MyDoFn []
     :extends org.apache.crunch.DoFn
     (process [_ input emitter]
       (let [output (input-fn input)
-            fn-e (emitter-fn emitter)]
-        (if (seq? output) (map fn-e output) (fn-e output))))))
+            f (emitter-fn emitter)]
+        (cond
+          (map? output) (f output)
+          (coll? output) (doall (map f output))
+          :else (f output))))))
 
 (defn gen-combine-fn [combine-fn]
   (defclass MyCombineFn []
