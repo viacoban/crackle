@@ -1,32 +1,29 @@
 (ns crackle.core
-  (:use crackle.generator)
-  (:use [crackle.ptype :only [ptype ptabletype]]))
+  (:require crackle.impl.fn.dofn)
+  (:require crackle.impl.fn.mapfn)
+  (:require crackle.impl.fn.mapvfn)
+  (:require crackle.impl.fn.combinefn)
+  (:require crackle.impl.fn.filterfn)
+  (:use crackle.impl.jar))
 
 (defn pair-of [one two]
   (org.apache.crunch.Pair/of one two))
 
-(def simple-ptype ptype)
+(defn def-dofn [f]
+  (crackle.impl.fn.dofn. f))
 
-(def table-ptype ptabletype)
+(defn def-mapfn [f]
+  (crackle.impl.fn.mapfn. f))
 
-(defn from-txt [path]
-  (org.apache.crunch.io.From/textFile path))
+(defn def-mapvfn [f]
+  (crackle.impl.fn.mapvfn. f))
 
-(defn to-txt [path]
-  (org.apache.crunch.io.To/textFile path))
+(defn def-filterfn [f]
+  (crackle.impl.fn.filterfn. f))
 
+(defn def-combinefn [f]
+  (crackle.impl.fn.combinefn. f))
 
-(defn do-fn [f]
-  (.newInstance (gen-do-fn f)))
-
-(defn combine-fn [f]
-  (.newInstance (gen-combine-fn f)))
-
-(defn map-fn [f]
-  (.newInstance (gen-map-fn f)))
-
-(defn mapv-fn [f]
-  (.newInstance (gen-mapv-fn f)))
 
 (defn- get-method-symbol [call]
   (symbol (name (first call))))
@@ -40,8 +37,15 @@
 (defmacro mem-pipeline [source & body]
   `(let [pipeline# (org.apache.crunch.impl.mem.MemPipeline/getInstance)]
      (do
-       (-> pipeline#
-         (. read ~source)
-         ~@(map crunch-call body))
+       (.enableDebug pipeline#)
+       (-> pipeline# (. read ~source) ~@(map crunch-call body))
+       (.done pipeline#))))
+
+(defmacro mr-pipeline [source & body]
+  `(let [pipeline# (crackle.MRPipelineImpl.)]
+     (do
+       (.enableDebug pipeline#)
+       (-> pipeline# (. read ~source) ~@(map crunch-call body))
+       (setup-job-jar pipeline#)
        (.done pipeline#))))
 

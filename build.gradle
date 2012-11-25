@@ -15,21 +15,36 @@ apply plugin: 'clojure'
 apply plugin: 'idea'
 apply plugin: 'maven'
 
+aotCompile = true
+warnOnReflection = true
+
 repositories {
   mavenCentral()
   clojarsRepo()
+  mavenRepo url: "https://repository.cloudera.com/artifactory/cloudera-repos"
+}
+
+configurations {
+  all*.resolutionStrategy {
+    force 'org.slf4j:slf4j-api:1.4.3'
+    force 'org.slf4j:slf4j-log4j12:1.4.3'
+  }
 }
 
 dependencies {
   compile 'org.clojure:clojure:1.4.+'
-  compile 'storm:carbonite:1.5.+'
+  compile 'com.twitter:carbonite:1.3.1'
   compile 'shady:shady:0.1.1'
 
   compile 'org.apache.crunch:crunch:0.4.0-incubating'
   compile 'org.apache.crunch:crunch-hbase:0.4.0-incubating'
+  compile 'org.apache.hadoop:hadoop-core:0.20.2-cdh3u2'
 
-  compile 'org.apache.hadoop:hadoop-client:1.0.+'
-  compile 'org.apache.hbase:hbase:0.92.+'
+  runtime 'log4j:log4j:1.2.17'
+  runtime files("${System.getenv('HADOOP_HOME')}/conf")
+  runtime files("${System.getenv('HBASE_HOME')}/conf")
+
+  testCompile 'org.testng:testng:6.8'
 }
 
 compileClojure.dependsOn compileJava
