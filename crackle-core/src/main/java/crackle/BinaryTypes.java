@@ -45,7 +45,7 @@ public final class BinaryTypes {
   private static class PTypeOutputFn extends MapFn<Object, ByteBuffer> {
     @Override
     public ByteBuffer map(Object obj) {
-      ByteBufferOutputStream stream = new ByteBufferOutputStream(4096);
+      ByteBufferOutputStream stream = new ByteBufferOutputStream(1024);
       Output output = new Output(stream);
       KRYO.writeClassAndObject(output, obj);
       output.flush();

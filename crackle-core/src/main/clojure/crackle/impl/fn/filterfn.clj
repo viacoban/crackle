@@ -1,4 +1,5 @@
 (ns crackle.impl.fn.filterfn
+  (:use crackle.impl.fn.common)
   (:gen-class
     :extends org.apache.crunch.FilterFn
     :state state
@@ -9,7 +10,7 @@
   [[] f])
 
 (defn -initialize [this]
-  (require (symbol (namespace (.state this)))))
+  (load-namespace this))
 
 (defn -accept [this value]
-  ((resolve (.state this)) value))
+  ((as-fn this) value))

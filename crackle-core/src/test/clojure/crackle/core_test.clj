@@ -1,4 +1,4 @@
-(ns crackle.test
+(ns crackle.core-test
   (:use crackle.core)
   (:use clojure.test)
   (:import [org.apache.crunch Pair]))
@@ -36,6 +36,4 @@
 
 (deftest test-filter-fn
   (is (= [1] (execute-do-fn (def-filterfn `pos?) 1)))
-  (is (= [] (execute-do-fn (def-filterfn `pos?) -1))))
-
-
+  (is (empty? (execute-do-fn (def-filterfn `pos?) -1))))

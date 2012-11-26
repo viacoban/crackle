@@ -2,8 +2,8 @@
   (:import [crackle BinaryTypes])
   (:import [org.apache.crunch.types.writable Writables]))
 
-;(defn nulls []
-;  (Writables/nulls))
+(defn nulls []
+  (Writables/nulls))
 
 (defn strings []
   (Writables/strings))

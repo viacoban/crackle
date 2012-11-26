@@ -1,4 +1,5 @@
 (ns crackle.impl.fn.combinefn
+  (:use crackle.impl.fn.common)
   (:gen-class
     :extends org.apache.crunch.CombineFn
     :state state
@@ -9,7 +10,7 @@
   [[] f])
 
 (defn -initialize [this]
-  (require (symbol (namespace (.state this)))))
+  (load-namespace this))
 
 (defn -process [this ^org.apache.crunch.Pair pair ^org.apache.crunch.Emitter emitter]
-  (.emit emitter (org.apache.crunch.Pair/of (.first pair) (reduce (resolve (.state this)) (.second pair)))))
+  ((emitter-fn emitter) (pair-of (.first pair) (reduce (as-fn this) (.second pair)))))

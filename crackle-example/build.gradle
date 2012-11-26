@@ -1,0 +1,9 @@
+dependencies {
+  compile project(':crackle-core')
+  compile project(':crackle-hbase')
+
+  runtime files("${System.getenv('HADOOP_HOME')}/conf")
+  runtime files("${System.getenv('HBASE_HOME')}/conf")
+
+  runtime 'log4j:log4j:1.2.17'
+}

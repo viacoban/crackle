@@ -1,18 +1,16 @@
 (ns crackle.impl.fn.dofn
+  (:use crackle.impl.fn.common)
   (:gen-class
     :extends org.apache.crunch.DoFn
     :state state
     :init init
     :constructors {[Object] []}))
 
-(defn emitter-fn [^org.apache.crunch.Emitter emitter]
-  (fn [v] (.emit emitter v)))
-
 (defn -init [f]
   [[] f])
 
 (defn -initialize [this]
-  (require (symbol (namespace (.state this)))))
+  (load-namespace this))
 
 (defn -process [this input emitter]
-  ((resolve (.state this)) (emitter-fn emitter) input))
+  ((as-fn this) (emitter-fn emitter) input))

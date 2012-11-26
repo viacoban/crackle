@@ -10,7 +10,7 @@ Crackle is available on [Clojars](https://clojars.org/)
 with Leiningen:
 
 ```clj
-[crackle "0.2.0"]
+[crackle/crackle-core "0.2.0"]
 ```
 
 with Maven:
@@ -18,7 +18,7 @@ with Maven:
 ```xml
 <dependency>
  <groupId>crackle</groupId>
- <artifactId>crackle</artifactId>
+ <artifactId>crackle-core</artifactId>
  <version>0.2.0</version>
 </dependency>
 ```

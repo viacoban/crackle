@@ -1,4 +1,5 @@
 (ns crackle.impl.fn.mapfn
+  (:use crackle.impl.fn.common)
   (:gen-class
     :extends org.apache.crunch.MapFn
     :state state
@@ -9,7 +10,7 @@
   [[] f])
 
 (defn -initialize [this]
-  (require (symbol (namespace (.state this)))))
+  (load-namespace this))
 
 (defn -map [this value]
-  ((resolve (.state this)) value))
+  ((as-fn this) value))
