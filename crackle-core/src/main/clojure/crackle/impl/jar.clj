@@ -1,23 +1,35 @@
 (ns crackle.impl.jar
-  (:require clojure.java.shell)
+  (:import [org.apache.crunch Pipeline])
   (:import [org.apache.crunch.util DistCache])
-  (:import [java.io File FileOutputStream])
-  (:import [java.util.jar JarOutputStream]))
+  (:import [org.apache.commons.io IOUtils])
+  (:import [java.io File FileOutputStream FileInputStream])
+  (:import [java.util.jar JarOutputStream JarEntry]))
 
 (def ^:dynamic crackle-tmp-root "/tmp")
 
 (defn get-temp-dir []
   (str crackle-tmp-root "/crackletmp" (System/currentTimeMillis)))
 
-(defn- full-path [^File file]
-  (.getAbsolutePath file))
+(defn get-jar-entry-name [parent ^File file]
+  (str parent (.getName file) (if (.isDirectory file) "/" "")))
 
-(defn- jar-dir [dir]
+(defn add-file [^File file ^String entry-name ^JarOutputStream stream]
+  (let [^JarEntry entry (JarEntry. entry-name)]
+    (.putNextEntry stream entry)
+    (when (.isFile file) (IOUtils/copy (FileInputStream. file) stream))
+    (.closeEntry stream)
+
+    (when (.isDirectory file)
+      (doseq [f (.listFiles file)]
+        (add-file f (get-jar-entry-name entry-name f) stream)))))
+
+(defn jar-dir [^String dir]
   (let [jar-file (File. (str dir ".jar"))]
-    (clojure.java.shell/sh "jar" "cf" (full-path jar-file) "-C" dir ".")
+    (with-open [stream (JarOutputStream. (FileOutputStream. jar-file))]
+      (add-file (File. dir) "" stream))
     jar-file))
 
-(defn setup-job-classpath [pipeline]
+(defn setup-job-classpath [^Pipeline pipeline]
   (let [configuration (.getConfiguration pipeline)]
-    (DistCache/addJarToDistributedCache (.getConfiguration pipeline) (jar-dir *compile-path*))
+    (DistCache/addJarToDistributedCache configuration (jar-dir *compile-path*))
     (DistCache/addJarDirToDistributedCache configuration (System/getProperty "crackle.lib.dir"))))
