@@ -1,4 +1,4 @@
-package crackle;
+package crackle.types;
 
 import carbonite.JavaBridge;
 import com.esotericsoftware.kryo.Kryo;
@@ -8,10 +8,11 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import java.nio.ByteBuffer;
 import org.apache.crunch.MapFn;
+import org.apache.crunch.types.PTableType;
 import org.apache.crunch.types.PType;
 import org.apache.crunch.types.writable.Writables;
 
-public final class BinaryTypes {
+public final class Clojure {
 
   private static Kryo KRYO;
 
@@ -25,14 +26,21 @@ public final class BinaryTypes {
     }
   }
 
-  private static final PType<Object> SIMPLE_TYPE = Writables.derived(
+  private static final PType<Object> BINARY_TYPE = Writables.derived(
     Object.class, new PTypeInputFn(), new PTypeOutputFn(), Writables.bytes()
   );
 
-  private BinaryTypes() { }
+  private static final PTableType<Object, Object> TABLE_TYPE =
+    Writables.tableOf(BINARY_TYPE, BINARY_TYPE);
+
+  private Clojure() { }
 
   public static PType<Object> anything() {
-    return SIMPLE_TYPE;
+    return BINARY_TYPE;
+  }
+
+  public static PTableType<Object, Object> tableOf() {
+    return TABLE_TYPE;
   }
 
   private static class PTypeInputFn extends MapFn<ByteBuffer, Object> {

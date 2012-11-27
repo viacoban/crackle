@@ -2,6 +2,8 @@
 
 A Clojure wrapper around [Apache Crunch](http://incubator.apache.org/crunch/)
 
+**Attention**: This is pre-alpha quality code, things might change or stop working!
+
 
 ## Installation
 
@@ -10,7 +12,7 @@ Crackle is available on [Clojars](https://clojars.org/)
 with Leiningen:
 
 ```clj
-[crackle/crackle-core "0.2.0"]
+[crackle/crackle-core "0.3.0"]
 ```
 
 with Maven:
@@ -19,7 +21,7 @@ with Maven:
 <dependency>
  <groupId>crackle</groupId>
  <artifactId>crackle-core</artifactId>
- <version>0.2.0</version>
+ <version>0.3.0</version>
 </dependency>
 ```
 
@@ -29,20 +31,20 @@ Word count example with Crackle:
 
 ```clj
 (ns crackle.example
-  (:use crackle.core)
-  (:use crackle.source)
-  (:use crackle.target)
-  (:require [crackle.types :as t]))
+  (:import [crackle.types Clojure])
+  (:import [org.apache.crunch.io From To])
+  (:import [org.apache.crunch.types.writable Writables])
+  (:use crackle.core))
 
 ;====== word count example ===============
 (defn split-words [f line]
   (doseq [word (clojure.string/split line #"\s+")] (f word)))
 
 (defn count-words [input-path output-path]
-  (mr-pipeline (from-text-file input-path)
-    (:parallelDo (def-dofn `split-words) (t/strings))
-    (:count)
-    (:write (to-text-file output-path))))
+  (mr-pipeline (From/textFile input-path)
+    (parallelDo (def-dofn `split-words) (Writables/strings))
+    (count)
+    (write (To/textFile output-path))))
 
 ;====== average bytes by ip example ======
 (defn parse-line [line]
@@ -56,12 +58,12 @@ Word count example with Crackle:
   (int (apply / pair)))
 
 (defn count-bytes-by-ip [input-path output-path]
-  (mr-pipeline (from-text-file input-path)
-    (:parallelDo (def-mapfn `parse-line) (t/table-of-binary))
-    (:groupByKey)
-    (:combineValues (def-combinefn `sum-pairs))
-    (:parallelDo (def-mapvfn `compute-average) (t/w-table-of (t/strings) (t/wints)))
-    (:write (to-text-file output-path))))
+  (mr-pipeline (From/textFile input-path)
+    (parallelDo (def-mapfn `parse-line) (Clojure/tableOf))
+    (groupByKey)
+    (combineValues (def-combinefn `sum-pairs))
+    (parallelDo (def-mapvfn `compute-average) (Writables/tableOf (Writables/strings) (Writables/ints)))
+    (write (To/textFile output-path))))
 
 ```
 

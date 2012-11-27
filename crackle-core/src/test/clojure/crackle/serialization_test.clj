@@ -1,11 +1,10 @@
 (ns crackle.serialization-test
+  (:import [crackle.types Clojure])
   (:use clojure.test))
 
-(def input-fn
-  (.getInputMapFn (crackle.BinaryTypes/anything)))
+(def input-fn (.getInputMapFn (Clojure/anything)))
 
-(def output-fn
-  (.getOutputMapFn (crackle.BinaryTypes/anything)))
+(def output-fn (.getOutputMapFn (Clojure/anything)))
 
 (defn serialize-deserialize [v]
   (.map input-fn (.map output-fn v)))
