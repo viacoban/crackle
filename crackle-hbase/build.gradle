@@ -2,3 +2,16 @@ dependencies {
   compile project(':crackle-core')
   compile 'org.apache.crunch:crunch-hbase:0.4.0-incubating'
 }
+
+task writePom << {
+  pom {
+    project {
+      licenses {
+        license {
+          name 'Eclipse Public License'
+          url 'http://www.eclipse.org/legal/epl-v10.html'
+        }
+      }
+    }
+  }.writeTo("$buildDir/pom.xml")
+}
