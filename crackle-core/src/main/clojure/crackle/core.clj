@@ -1,11 +1,5 @@
 (ns crackle.core
-  (:require crackle.impl.fn.dofn)
-  (:require crackle.impl.fn.mapfn)
-  (:require crackle.impl.fn.mapvfn)
-  (:require crackle.impl.fn.combinefn)
-  (:require crackle.impl.fn.filterfn)
-  (:require crackle.impl.mrpipeline)
-  (:use crackle.impl.jar))
+  (:use crackle.gen-jar))
 
 (defn pair-of [one two]
   (org.apache.crunch.Pair/of one two))
@@ -14,25 +8,28 @@
   (when-not (nil? *compile-path*)
     (compile (symbol (namespace s)))))
 
-(defn def-dofn [f]
-  (compile-symbol-ns f)
-  (crackle.impl.fn.dofn. f))
+(defn emitter-fn [^org.apache.crunch.Emitter emitter]
+  (fn [v] (.emit emitter v)))
 
-(defn def-mapfn [f]
-  (compile-symbol-ns f)
-  (crackle.impl.fn.mapfn. f))
+(defmacro defn-with-compile [name [f] & body]
+  `(defn ~name [~f]
+     (compile-symbol-ns ~f)
+     ~@body))
 
-(defn def-mapvfn [f]
-  (compile-symbol-ns f)
-  (crackle.impl.fn.mapvfn. f))
+(defn-with-compile def-dofn [f]
+  (crackle.DoFnWrapper. `emitter-fn f))
 
-(defn def-filterfn [f]
-  (compile-symbol-ns f)
-  (crackle.impl.fn.filterfn. f))
+(defn-with-compile def-mapfn [f]
+  (crackle.MapFnWrapper. f))
 
-(defn def-combinefn [f]
-  (compile-symbol-ns f)
-  (crackle.impl.fn.combinefn. f))
+(defn-with-compile def-mapvfn [f]
+  (crackle.MapValueFnWrapper. f))
+
+(defn-with-compile def-filterfn [f]
+  (crackle.FilterFnWrapper. f))
+
+(defn-with-compile def-combinefn [f]
+  (crackle.CombineFnWrapper. `reduce f))
 
 (defn- get-method-symbol [call]
   (symbol (name (first call))))
@@ -51,7 +48,7 @@
        (.done pipeline#))))
 
 (defmacro mr-pipeline [source & body]
-  `(let [pipeline# (org.apache.crunch.impl.mr.MRPipeline. crackle.impl.mrpipeline)
+  `(let [pipeline# (org.apache.crunch.impl.mr.MRPipeline. crackle.PortableFn)
          pipeline-dir# ~(get-temp-dir)]
      (binding [*compile-path* pipeline-dir#]
        (do

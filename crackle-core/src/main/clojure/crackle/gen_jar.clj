@@ -1,4 +1,4 @@
-(ns crackle.impl.jar
+(ns crackle.gen-jar
   (:import [org.apache.crunch Pipeline])
   (:import [org.apache.crunch.util DistCache])
   (:import [org.apache.commons.io IOUtils])
@@ -30,6 +30,7 @@
     jar-file))
 
 (defn setup-job-classpath [^Pipeline pipeline]
-  (let [configuration (.getConfiguration pipeline)]
-    (DistCache/addJarToDistributedCache configuration (jar-dir *compile-path*))
+  (let [configuration (.getConfiguration pipeline)
+        ^File jar-file (jar-dir *compile-path*)]
+    (DistCache/addJarToDistributedCache configuration jar-file)
     (DistCache/addJarDirToDistributedCache configuration (System/getProperty "crackle.lib.dir"))))

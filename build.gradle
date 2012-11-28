@@ -12,13 +12,12 @@ ideaModule.enabled = false
 
 subprojects {
   group = 'crackle'
-  version = '0.3.0'
+  version = '0.3.0-SNAPSHOT'
 
   apply plugin: 'java'
   apply plugin: 'clojure'
   apply plugin: 'idea'
 
-  aotCompile = true
   warnOnReflection = true
 
   repositories {
@@ -32,4 +31,8 @@ subprojects {
   }
 
   compileClojure.dependsOn compileJava
+
+  clean.doFirst {
+    ant.delete(dir: 'lib')
+  }
 }
