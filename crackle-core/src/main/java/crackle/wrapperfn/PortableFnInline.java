@@ -4,7 +4,7 @@ import clojure.lang.IFn;
 import clojure.lang.RT;
 import clojure.lang.Var;
 
-public class PortableFnInline implements PortableFn {
+public final class PortableFnInline implements PortableFn {
 
   private static final Var EVAL = RT.var("clojure.core", "eval");
 

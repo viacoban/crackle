@@ -1,9 +1,8 @@
 package crackle.wrapperfn;
 
-import org.apache.crunch.MapFn;
-import org.apache.crunch.Pair;
+import org.apache.crunch.fn.MapValuesFn;
 
-public class MapValueFnWrapper extends MapFn<Pair, Pair> {
+public final class MapValueFnWrapper extends MapValuesFn<Object, Object, Object> {
 
   private final PortableFn valueFn;
 
@@ -12,8 +11,8 @@ public class MapValueFnWrapper extends MapFn<Pair, Pair> {
   }
 
   @Override
-  public Pair map(Pair input) {
-    return new Pair<Object, Object>(input.first(), valueFn.fn().invoke(input.second()));
+  public Object map(Object value) {
+    return valueFn.fn().invoke(value);
   }
 
 }
