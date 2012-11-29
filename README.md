@@ -53,16 +53,14 @@ with Maven:
 (defn sum-pairs [a b]
   [(+ (first a) (first b)) (+ (second a) (second b))])
 
-(defn compute-average [pair]
-  (int (apply / pair)))
-
 (defn count-bytes-by-ip [input-path output-path]
   (pipeline :debug
     (From/textFile input-path)
     (parallelDo (def-mapfn `parse-line) (Clojure/tableOf))
     (groupByKey)
     (combineValues (def-combinefn `sum-pairs))
-    (parallelDo (def-mapvfn `compute-average) (Writables/tableOf (Writables/strings) (Writables/ints)))
+    (parallelDo (def-mapvfn '#(int (apply / %))) ;anonymous inline function!
+      (Writables/tableOf (Writables/strings) (Writables/ints)))
     (write (To/textFile output-path))))
 
 ```

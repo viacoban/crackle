@@ -11,25 +11,30 @@
 (defn emitter-fn [^org.apache.crunch.Emitter emitter]
   (fn [v] (.emit emitter v)))
 
-(defmacro defn-with-compile [name [f] & body]
-  `(defn ~name [~f]
-     (compile-symbol-ns ~f)
-     ~@body))
+(defn- portable-fn [f]
+  (cond
+    (list? f) (crackle.PortableFnInline. (pr-str f))
+    (symbol? f)
+    (do
+      (println "symbol" f)
+      (compile-symbol-ns f)
+      (crackle.PortableFnSymbol. f))
+    :else (throw (IllegalArgumentException. "not a symbol and not a list"))))
 
-(defn-with-compile def-dofn [f]
-  (crackle.DoFnWrapper. `emitter-fn f))
+(defn def-dofn [f]
+  (crackle.DoFnWrapper. (portable-fn f) (portable-fn `emitter-fn)))
 
-(defn-with-compile def-mapfn [f]
-  (crackle.MapFnWrapper. f))
+(defn def-mapfn [f]
+  (crackle.MapFnWrapper. (portable-fn f)))
 
-(defn-with-compile def-mapvfn [f]
-  (crackle.MapValueFnWrapper. f))
+(defn def-mapvfn [f]
+  (crackle.MapValueFnWrapper. (portable-fn f)))
 
-(defn-with-compile def-filterfn [f]
-  (crackle.FilterFnWrapper. f))
+(defn def-filterfn [f]
+  (crackle.FilterFnWrapper. (portable-fn f)))
 
-(defn-with-compile def-combinefn [f]
-  (crackle.CombineFnWrapper. `reduce f))
+(defn def-combinefn [f]
+  (crackle.CombineFnWrapper. (portable-fn `reduce) (portable-fn f)))
 
 (defn binding-symbol [form]
   (if (:> (set form)) (last form) (gensym "step-")))
