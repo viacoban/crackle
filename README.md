@@ -27,8 +27,6 @@ with Maven:
 
 ## Usage
 
-Word count example with Crackle:
-
 ```clj
 (ns crackle.example
   (:import [crackle.types Clojure])
