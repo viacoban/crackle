@@ -1,6 +1,5 @@
-package crackle;
+package crackle.wrapperfn;
 
-import org.apache.commons.lang.Validate;
 import org.apache.crunch.DoFn;
 import org.apache.crunch.Emitter;
 

@@ -1,4 +1,4 @@
-package crackle;
+package crackle.wrapperfn;
 
 import org.apache.crunch.FilterFn;
 

@@ -1,4 +1,4 @@
-package crackle;
+package crackle.pipeline;
 
 import org.apache.crunch.Pipeline;
 import org.apache.crunch.impl.mem.MemPipeline;

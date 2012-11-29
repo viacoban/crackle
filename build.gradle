@@ -12,7 +12,7 @@ ideaModule.enabled = false
 
 subprojects {
   group = 'crackle'
-  version = '0.3.0-SNAPSHOT'
+  version = '0.4.0-SNAPSHOT'
 
   apply plugin: 'java'
   apply plugin: 'clojure'

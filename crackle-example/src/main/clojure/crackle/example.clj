@@ -10,10 +10,10 @@
 
 (defn count-words [input-path output-path]
   (pipeline :debug
-    (From/textFile input-path)
-    (parallelDo (def-dofn `split-words) (Writables/strings))
-    (count)
-    (write (To/textFile output-path))))
+    (with (From/textFile input-path)
+      (parallelDo (def-dofn `split-words) (Writables/strings))
+      (count)
+      (write (To/textFile output-path)))))
 
 ;====== average bytes by ip example ======
 (defn parse-line [line]
@@ -25,10 +25,10 @@
 
 (defn count-bytes-by-ip [input-path output-path]
   (pipeline :debug
-    (From/textFile input-path)
-    (parallelDo (def-mapfn `parse-line) (Clojure/tableOf))
-    (groupByKey)
-    (combineValues (def-combinefn `sum-pairs))
-    (parallelDo (def-mapvfn '#(int (apply / %))) ;anonymous inline function!
-      (Writables/tableOf (Writables/strings) (Writables/ints)))
-    (write (To/textFile output-path))))
+    (with (From/textFile input-path)
+      (parallelDo (def-mapfn `parse-line) (Clojure/tableOf))
+      (groupByKey)
+      (combineValues (def-combinefn `sum-pairs))
+      (parallelDo (def-mapvfn '#(int (apply / %))) ;anonymous inline function!
+        (Writables/tableOf (Writables/strings) (Writables/ints)))
+      (write (To/textFile output-path)))))
