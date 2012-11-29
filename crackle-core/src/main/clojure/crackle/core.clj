@@ -31,30 +31,41 @@
 (defn-with-compile def-combinefn [f]
   (crackle.CombineFnWrapper. `reduce f))
 
-(defn- get-method-symbol [call]
-  (symbol (name (first call))))
+(defn binding-symbol [form]
+  (if (:> (set form)) (last form) (gensym "step-")))
 
-(defn- get-method-args [call]
-  (rest call))
+(defn form-to-call [instance-name form]
+  (let [call-form (if (:> (set form)) (drop-last 2 form) form)
+        method-name (symbol (name (first call-form)))
+        method-args (rest call-form)]
+    (list* '. instance-name method-name method-args)))
 
-(defn- crunch-call [call]
-  (concat (list '. (get-method-symbol call)) (get-method-args call)))
+(defn forms-to-calls [source forms]
+  (loop [previous source
+         others forms
+         result []]
+    (if (empty? others) result
+      (let [current (first others)
+            call-name (binding-symbol current)
+            call (form-to-call previous current)]
+        (recur call-name (rest others) (concat result [call-name call]))))))
 
-(defmacro mem-pipeline [source & body]
-  `(let [pipeline# (org.apache.crunch.impl.mem.MemPipeline/getInstance)]
-     (do
-       (.enableDebug pipeline#)
-       (-> pipeline# (. read ~source) ~@(map crunch-call body))
-       (.done pipeline#))))
+(defmacro pipeline [& body]
+  (let [opts (set (filter keyword? body))
+        result (first (filter vector? body))
+        forms (filter list? body)
+        in-memory? (contains? opts :mem )
+        debug? (contains? opts :debug )
+        pipeline-sym (gensym "pipeline-")
+        source-sym (gensym "source-")]
 
-(defmacro mr-pipeline [source & body]
-  `(let [pipeline# (org.apache.crunch.impl.mr.MRPipeline. crackle.PortableFn)
-         pipeline-dir# ~(get-temp-dir)]
-     (binding [*compile-path* pipeline-dir#]
-       (do
-         (.mkdir (clojure.java.io/file pipeline-dir#))
-         (.enableDebug pipeline#)
-         (-> pipeline# (. read ~source) ~@(map crunch-call body))
-         (setup-job-classpath pipeline#)
-         (.done pipeline#)))))
+    `(binding [*compile-path* (get-temp-dir)]
+       ~(when-not in-memory? `(.mkdir (clojure.java.io/file *compile-path*)))
 
+       (let [~pipeline-sym (crackle.PipelineFactory/getPipeline ~in-memory?)
+             ~source-sym (.read ~pipeline-sym ~(first forms))
+             ~@(forms-to-calls source-sym (rest forms))]
+         ~(when debug? `(.enableDebug ~pipeline-sym))
+         ~(when-not in-memory? `(setup-job-classpath ~pipeline-sym))
+         (.done ~pipeline-sym)
+         ~result))))

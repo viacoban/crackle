@@ -9,7 +9,8 @@
   (doseq [word (clojure.string/split line #"\s+")] (f word)))
 
 (defn count-words [input-path output-path]
-  (mr-pipeline (From/textFile input-path)
+  (pipeline :debug
+    (From/textFile input-path)
     (parallelDo (def-dofn `split-words) (Writables/strings))
     (count)
     (write (To/textFile output-path))))
@@ -26,7 +27,8 @@
   (int (apply / pair)))
 
 (defn count-bytes-by-ip [input-path output-path]
-  (mr-pipeline (From/textFile input-path)
+  (pipeline :debug
+    (From/textFile input-path)
     (parallelDo (def-mapfn `parse-line) (Clojure/tableOf))
     (groupByKey)
     (combineValues (def-combinefn `sum-pairs))

@@ -37,3 +37,9 @@
 (deftest test-filter-fn
   (is (= [1] (execute-do-fn (def-filterfn `pos?) 1)))
   (is (empty? (execute-do-fn (def-filterfn `pos?) -1))))
+
+(deftest test-form-to-call
+  (is (= '(. :aaa parallelDo :param1 :param2 ) (form-to-call :aaa '(:parallelDo :param1 :param2 ))))
+  (is (= '(. :aaa parallelDo :param1 :param2 ) (form-to-call :aaa '(:parallelDo :param1 :param2 :> var1))))
+  (is (= '(. :aaa parallelDo) (form-to-call :aaa '(:parallelDo ))))
+  (is (= '(. :aaa parallelDo) (form-to-call :aaa '(:parallelDo :> var2)))))
