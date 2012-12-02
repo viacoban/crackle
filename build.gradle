@@ -8,7 +8,6 @@ buildscript {
 }
 
 apply plugin: 'idea'
-ideaModule.enabled = false
 
 subprojects {
   group = 'crackle'

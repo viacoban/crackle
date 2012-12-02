@@ -1,4 +1,4 @@
-(ns crackle.gen-jar
+(ns crackle.impl.gen-jar
   (:import [org.apache.crunch Pipeline])
   (:import [org.apache.crunch.util DistCache])
   (:import [org.apache.commons.io IOUtils])

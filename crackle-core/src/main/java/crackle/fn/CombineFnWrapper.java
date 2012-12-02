@@ -1,4 +1,4 @@
-package crackle.wrapperfn;
+package crackle.fn;
 
 import org.apache.crunch.CombineFn;
 import org.apache.crunch.Emitter;

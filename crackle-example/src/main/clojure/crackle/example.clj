@@ -1,34 +1,33 @@
 (ns crackle.example
-  (:import [crackle.types Clojure])
-  (:import [org.apache.crunch.io From To])
-  (:import [org.apache.crunch.types.writable Writables])
+  (:require [crackle.from :as from])
+  (:require [crackle.to :as to])
   (:use crackle.core))
 
 ;====== word count example ===============
-(defn split-words [f line]
-  (doseq [word (clojure.string/split line #"\s+")] (f word)))
+(fn-mapcat split-words [line] :strings
+  (clojure.string/split line #"\s+"))
 
 (defn count-words [input-path output-path]
-  (pipeline :debug
-    (with (From/textFile input-path)
-      (parallelDo (def-dofn `split-words) (Writables/strings))
-      (count)
-      (write (To/textFile output-path)))))
+  (pipeline (from/text-file input-path)
+    (split-words)
+    (count-values)
+    (to/text-file output-path)))
 
 ;====== average bytes by ip example ======
-(defn parse-line [line]
+(fn-map parse-line [line] [:strings :clojure]
   (let [parts (clojure.string/split line #"\s+")]
     (pair-of (first parts) [(read-string (second parts)) 1])))
 
-(defn sum-pairs [a b]
-  [(+ (first a) (first b)) (+ (second a) (second b))])
+(fn-combine sum-bytes-and-counts [value1 value2]
+  [(+ (first value1) (first value2)) (+ (second value1) (second value2))])
+
+(fn-mapv compute-average [value] :ints
+  (int (apply / value)))
 
 (defn count-bytes-by-ip [input-path output-path]
-  (pipeline :debug
-    (with (From/textFile input-path)
-      (parallelDo (def-mapfn `parse-line) (Clojure/tableOf))
-      (groupByKey)
-      (combineValues (def-combinefn `sum-pairs))
-      (parallelDo (def-mapvfn '#(int (apply / %))) ;anonymous inline function!
-        (Writables/tableOf (Writables/strings) (Writables/ints)))
-      (write (To/textFile output-path)))))
+  (pipeline (from/text-file input-path)
+    (parse-line)
+    (group-by-key)
+    (sum-bytes-and-counts)
+    (compute-average)
+    (to/text-file output-path)))

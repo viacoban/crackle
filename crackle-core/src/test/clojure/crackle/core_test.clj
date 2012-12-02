@@ -16,25 +16,25 @@
     (.process do-fn input (mock-emitter values))
     @values))
 
-(deftest test-do-fn
-  (is (= ["hello" "world"] (execute-do-fn (def-dofn `split-string) "hello world"))))
-
-(deftest test-map-fn
-  (is (= ["hello world"] (execute-do-fn (def-mapfn `identity) "hello world")))
-  (is (= ["hello world"] (execute-do-fn (def-mapfn '#(identity %)) "hello world")))
-  (is (= [(pair-of "hello" "world")] (execute-do-fn (def-mapfn `identity) (pair-of "hello" "world"))))
-  (is (= [nil] (execute-do-fn (def-mapfn `identity) nil)))
-  (is (= ['("hello world")] (execute-do-fn (def-mapfn `list) "hello world")))
-  (is (= [#{"hello world"}] (execute-do-fn (def-mapfn `identity) #{"hello world"})))
-  (is (= [{"a" "hello world"}] (execute-do-fn (def-mapfn `identity) {"a" "hello world"}))))
-
-(deftest test-mapv-fn
-  (is (= [(pair-of "k" "1")] (execute-do-fn (def-mapvfn `str) (pair-of "k" 1)))))
-
-(deftest test-combine-fn
-  (is (= [(pair-of "k" 6)] (execute-do-fn (def-combinefn `+) (pair-of "k" [1 2 3]))))
-  (is (= [(pair-of "k" 6)] (execute-do-fn (def-combinefn '#(+ %1 %2)) (pair-of "k" [1 2 3])))))
-
-(deftest test-filter-fn
-  (is (= [1] (execute-do-fn (def-filterfn `pos?) 1)))
-  (is (empty? (execute-do-fn (def-filterfn `pos?) -1))))
+;(deftest test-do-fn
+;  (is (= ["hello" "world"] (execute-do-fn (def-dofn `split-string) "hello world"))))
+;
+;(deftest test-map-fn
+;  (is (= ["hello world"] (execute-do-fn (def-mapfn `identity) "hello world")))
+;  (is (= ["hello world"] (execute-do-fn (def-mapfn '#(identity %)) "hello world")))
+;  (is (= [(pair-of "hello" "world")] (execute-do-fn (def-mapfn `identity) (pair-of "hello" "world"))))
+;  (is (= [nil] (execute-do-fn (def-mapfn `identity) nil)))
+;  (is (= ['("hello world")] (execute-do-fn (def-mapfn `list) "hello world")))
+;  (is (= [#{"hello world"}] (execute-do-fn (def-mapfn `identity) #{"hello world"})))
+;  (is (= [{"a" "hello world"}] (execute-do-fn (def-mapfn `identity) {"a" "hello world"}))))
+;
+;(deftest test-mapv-fn
+;  (is (= [(pair-of "k" "1")] (execute-do-fn (def-mapvfn `str) (pair-of "k" 1)))))
+;
+;(deftest test-combine-fn
+;  (is (= [(pair-of "k" 6)] (execute-do-fn (def-combinefn `+) (pair-of "k" [1 2 3]))))
+;  (is (= [(pair-of "k" 6)] (execute-do-fn (def-combinefn '#(+ %1 %2)) (pair-of "k" [1 2 3])))))
+;
+;(deftest test-filter-fn
+;  (is (= [1] (execute-do-fn (def-filterfn `pos?) 1)))
+;  (is (empty? (execute-do-fn (def-filterfn `pos?) -1))))

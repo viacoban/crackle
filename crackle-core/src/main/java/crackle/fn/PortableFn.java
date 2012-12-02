@@ -1,4 +1,4 @@
-package crackle.wrapperfn;
+package crackle.fn;
 
 import clojure.lang.IFn;
 import java.io.Serializable;

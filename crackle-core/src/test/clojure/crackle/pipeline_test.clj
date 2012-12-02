@@ -1,12 +1,12 @@
-(ns crackle.core-impl-test
-  (:use crackle.core-impl)
+(ns crackle.pipeline-test
+  (:use crackle.impl.pipeline)
   (:use clojure.test))
 
-(deftest test-expand-method-form
-  (is (= '(. :aaa parallelDo :param1 :param2 ) (expand-method-form :aaa '(:parallelDo :param1 :param2 ))))
-  (is (= '(. :aaa parallelDo :param1 :param2 ) (expand-method-form :aaa '(:parallelDo :param1 :param2 :as var1))))
-  (is (= '(. :aaa parallelDo) (expand-method-form :aaa '(:parallelDo ))))
-  (is (= '(. :aaa parallelDo) (expand-method-form :aaa '(:parallelDo :as var2)))))
+;(deftest test-expand-method-form
+;  (is (= '(. :aaa parallelDo :param1 :param2 ) (expand-method-form :aaa '(:parallelDo :param1 :param2 ))))
+;  (is (= '(. :aaa parallelDo :param1 :param2 ) (expand-method-form :aaa '(:parallelDo :param1 :param2 :as var1))))
+;  (is (= '(. :aaa parallelDo) (expand-method-form :aaa '(:parallelDo ))))
+;  (is (= '(. :aaa parallelDo) (expand-method-form :aaa '(:parallelDo :as var2)))))
 
 (def pipeline-sym (gensym "pipeline-"))
 
