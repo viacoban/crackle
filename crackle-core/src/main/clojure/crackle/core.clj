@@ -12,7 +12,9 @@
     `(do
        (defn ~implf [~param] ~@body)
        (defn ~name []
-         (fn [pcoll#] (.parallelDo pcoll# ~(str name) (crackle.fn.MapCatFnWrapper. (portable-fn ~implf-sym)) ~(type-form type)))))))
+         (fn [pcoll#]
+           (.parallelDo pcoll# ~(str name)
+             (crackle.fn.MapCatFnWrapper. (portable-fn ~implf-sym)) ~(type-form type)))))))
 
 (defmacro fn-map [name [param] type & body]
   (let [implf (symbol (str name "-internal"))
@@ -20,7 +22,9 @@
     `(do
        (defn ~implf [~param] ~@body)
        (defn ~name []
-         (fn [pcoll#] (.parallelDo pcoll# ~(str name) (crackle.fn.MapFnWrapper. (portable-fn ~implf-sym)) ~(type-form type)))))))
+         (fn [pcoll#]
+           (.parallelDo pcoll# ~(str name)
+             (crackle.fn.MapFnWrapper. (portable-fn ~implf-sym)) ~(type-form type)))))))
 
 (defmacro fn-combine [name [p1 p2] & body]
   (let [implf (symbol (str name "-internal"))
@@ -28,7 +32,9 @@
     `(do
        (defn ~implf [~p1 ~p2] ~@body)
        (defn ~name []
-         (fn [pcoll#] (.combineValues pcoll# (crackle.fn.CombineFnWrapper. (portable-fn #'reduce) (portable-fn ~implf-sym))))))))
+         (fn [pcoll#]
+           (.combineValues pcoll#
+             (crackle.fn.CombineFnWrapper. (portable-fn #'reduce) (portable-fn ~implf-sym))))))))
 
 (defmacro fn-mapv [name [param] vtype & body]
   (let [implf (symbol (str name "-internal"))
@@ -37,7 +43,8 @@
        (defn ~implf [~param] ~@body)
        (defn ~name []
          (fn [pcoll#]
-           (.parallelDo pcoll# ~(str name) (crackle.fn.MapValueFnWrapper. (portable-fn ~implf-sym)) (table-type-with-value pcoll# ~(type-form vtype))))))))
+           (.parallelDo pcoll# ~(str name)
+             (crackle.fn.MapValueFnWrapper. (portable-fn ~implf-sym)) (table-type-with-value pcoll# ~(type-form vtype))))))))
 
 (defmacro fn-mapk [name [param] ktype & body]
   (let [implf (symbol (str name "-internal"))
@@ -46,7 +53,8 @@
        (defn ~implf [~param] ~@body)
        (defn ~name []
          (fn [pcoll#]
-           (.parallelDo pcoll# ~(str name) (crackle.fn.MapKeyFnWrapper. (portable-fn ~implf-sym)) (table-type-with-key pcoll# ~(type-form ktype))))))))
+           (.parallelDo pcoll# ~(str name)
+             (crackle.fn.MapKeyFnWrapper. (portable-fn ~implf-sym)) (table-type-with-key pcoll# ~(type-form ktype))))))))
 
 (defmacro fn-filter [name [param] & body]
   (let [implf (symbol (str name "-internal"))

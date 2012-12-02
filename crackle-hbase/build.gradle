@@ -1,6 +1,11 @@
 dependencies {
   compile project(':crackle-core')
   compile 'org.apache.crunch:crunch-hbase:0.4.0-incubating'
+  compile 'org.apache.hbase:hbase:0.90.4-cdh3u2'
+}
+
+configurations {
+  compile.exclude module: 'thrift'
 }
 
 task writePom << {
