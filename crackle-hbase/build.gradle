@@ -1,22 +1,10 @@
 dependencies {
   compile project(':crackle-core')
   compile 'org.apache.crunch:crunch-hbase:0.4.0-incubating'
-  compile 'org.apache.hbase:hbase:0.90.4-cdh3u2'
-}
 
-configurations {
-  compile.exclude module: 'thrift'
-}
+  development 'org.apache.hadoop:hadoop-core:0.20.2-cdh3u2'
+  development 'org.apache.hbase:hbase:0.90.4-cdh3u2'
 
-task writePom << {
-  pom {
-    project {
-      licenses {
-        license {
-          name 'Eclipse Public License'
-          url 'http://www.eclipse.org/legal/epl-v10.html'
-        }
-      }
-    }
-  }.writeTo("$buildDir/pom.xml")
+  testCompile 'org.apache.hadoop:hadoop-core:0.20.2-cdh3u2'
+  testCompile 'org.apache.hbase:hbase:0.90.4-cdh3u2'
 }

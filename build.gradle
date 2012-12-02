@@ -25,8 +25,22 @@ subprojects {
     mavenRepo url: "https://repository.cloudera.com/artifactory/cloudera-repos"
   }
 
+  configurations {
+    all*.exclude module: 'thrift'
+  }
+
   dependencies {
     compile 'org.clojure:clojure:1.4.+'
+  }
+
+  sourceSets {
+    main { compileClasspath += configurations.development }
+  }
+
+  idea {
+    module {
+      scopes.PROVIDED.plus += configurations.development
+    }
   }
 
   compileClojure.dependsOn compileJava
@@ -34,4 +48,21 @@ subprojects {
   clean.doFirst {
     ant.delete(dir: 'lib')
   }
+
+  task writePom << {
+    pom {
+      project {
+        description 'A Clojure wrapper for Apache Crunch'
+        inceptionYear '2012'
+        url 'https://github.com/viacoban/crackle'
+        licenses {
+          license {
+            name 'Eclipse Public License'
+            url 'http://www.eclipse.org/legal/epl-v10.html'
+          }
+        }
+      }
+    }.writeTo("$buildDir/pom.xml")
+  }
+
 }

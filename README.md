@@ -1,6 +1,6 @@
 ## Crackle
 
-A Clojure wrapper around [Apache Crunch](http://incubator.apache.org/crunch/)
+A Clojure wrapper for [Apache Crunch](http://incubator.apache.org/crunch/)
 
 **Attention**: This is pre-alpha quality code, things might change or stop working!
 
