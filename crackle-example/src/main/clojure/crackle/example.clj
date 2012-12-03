@@ -15,7 +15,7 @@
 
 ;====== average bytes by ip example ======
 (fn-map parse-line [line] [:strings :clojure]
-  (let [[address bytes] (take 2 (clojure.string/split line #"\s+"))]
+  (let [[address bytes] (clojure.string/split line #"\s+")]
     (pair-of address [(read-string bytes) 1])))
 
 (fn-combine sum-bytes-and-counts [value1 value2]
