@@ -1,13 +1,18 @@
+> **Clojure aphorism**:  
+> Clojure programmers don’t write their apps in Clojure.   
+> They write the language that they use to write their apps in Clojure.  
+>   
+>  _"The Joy of Clojure"_
+
 ## Crackle
 
 A Clojure wrapper for [Apache Crunch](http://incubator.apache.org/crunch/)
 
-**Attention**: This is pre-alpha quality code, things might change or stop working!
-
-
 ## Installation
 
-Crackle is available on [Clojars](https://clojars.org/)
+Crackle is available on [Clojars](https://clojars.org/)  
+
+**This is pre-alpha quality code, things might change or stop working**!
 
 with Leiningen:
 
