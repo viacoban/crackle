@@ -12,7 +12,7 @@ A Clojure wrapper for [Apache Crunch](http://incubator.apache.org/crunch/)
 
 Crackle is available on [Clojars](https://clojars.org/)  
 
-**This is pre-alpha quality code, things might change or stop working**!
+**This is development quality code, things might change or stop working**!
 
 with Leiningen:
 
