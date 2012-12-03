@@ -43,35 +43,41 @@
       `(.filter ~pcoll ~(str name)
          (crackle.fn.FilterFnWrapper. (portable-fn ~sym) (portable-args ~args))))))
 
-(defn count-values []
+(defn p-count []
   (fn [pcoll] (.count pcoll)))
 
-(defn collect-values []
+(defn p-collect-values []
   (fn [pcoll] (.collectValues pcoll)))
 
-(defn group-by-key []
+(defn p-group-by-key []
   (fn [pcoll] (.groupByKey pcoll)))
 
-(defn sort-items [ascending]
+(defn p-sort [ascending]
   (fn [pcoll] (.sort pcoll ascending)))
 
-(defn top [count]
+(defn p-top [count]
   (fn [pcoll] (.top pcoll count)))
 
-(defn bottom [count]
+(defn p-bottom [count]
   (fn [pcoll] (.bottom pcoll count)))
 
-(defn length []
+(defn p-length []
   (fn [pcoll] (.length pcoll)))
 
-(defn max-item []
+(defn p-max []
   (fn [pcoll] (.max pcoll)))
 
-(defn min-item []
+(defn p-min []
   (fn [pcoll] (.min pcoll)))
 
-(defn sample [probability]
+(defn p-sample [probability]
   (fn [pcoll] (.sample pcoll probability)))
+
+(defn p-keys []
+  (fn [pcoll] (.keys pcoll)))
+
+(defn p-values []
+  (fn [pcoll] (.values pcoll)))
 
 (defmacro do-pipeline [& body]
   (let [opts (set (filter keyword? body))

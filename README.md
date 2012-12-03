@@ -1,7 +1,7 @@
-> **Clojure aphorism**:  
-> Clojure programmers don’t write their apps in Clojure.   
-> They write the language that they use to write their apps in Clojure.  
->   
+> **Clojure aphorism**:
+> Clojure programmers don’t write their apps in Clojure.
+> They write the language that they use to write their apps in Clojure.
+>
 >  _"The Joy of Clojure"_
 
 ## Crackle
@@ -12,7 +12,7 @@ A Clojure wrapper for [Apache Crunch](http://incubator.apache.org/crunch/)
 
 **This is development quality code, things might change or stop working**!
 
-Crackle is available on [Clojars](https://clojars.org/)  
+Crackle is available on [Clojars](https://clojars.org/)
 
 with Leiningen:
 
@@ -45,12 +45,12 @@ with Maven:
 (defn count-words [input-path output-path]
   (do-pipeline (from/text-file input-path)
     (split-words #"\s+")
-    (count-values)
+    (p-count)
     (to/text-file output-path)))
 
 ;====== average bytes by ip example ======
 (fn-map parse-line [line] [:strings :clojure]
-  (let [[address bytes] (take 2 (clojure.string/split line #"\s+"))]
+  (let [[address bytes] (clojure.string/split line #"\s+")]
     (pair-of address [(read-string bytes) 1])))
 
 (fn-combine sum-bytes-and-counts [value1 value2]
@@ -62,7 +62,7 @@ with Maven:
 (defn count-bytes-by-ip [input-path output-path]
   (do-pipeline (from/text-file input-path)
     (parse-line)
-    (group-by-key)
+    (p-group-by-key)
     (sum-bytes-and-counts)
     (compute-average)
     (to/text-file output-path)))

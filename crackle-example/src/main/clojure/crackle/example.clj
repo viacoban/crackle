@@ -10,7 +10,7 @@
 (defn count-words [input-path output-path]
   (do-pipeline (from/text-file input-path)
     (split-words #"\s+")
-    (count-values)
+    (p-count)
     (to/text-file output-path)))
 
 ;====== average bytes by ip example ======
@@ -27,7 +27,7 @@
 (defn count-bytes-by-ip [input-path output-path]
   (do-pipeline (from/text-file input-path)
     (parse-line)
-    (group-by-key)
+    (p-group-by-key)
     (sum-bytes-and-counts)
     (compute-average)
     (to/text-file output-path)))
