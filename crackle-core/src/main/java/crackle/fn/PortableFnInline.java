@@ -11,6 +11,7 @@ public final class PortableFnInline implements PortableFn {
   private static final Var EVAL = RT.var("clojure.core", "eval");
 
   private final String fn;
+
   private transient IFn fVar;
 
   public PortableFnInline(String fn) {
@@ -18,11 +19,13 @@ public final class PortableFnInline implements PortableFn {
   }
 
   @Override
-  public IFn fn() {
-    if (fVar == null) {
-      REQUIRE.invoke(Symbol.create("crackle.core"));
-      fVar = (IFn) EVAL.invoke(RT.readString(fn));
-    }
+  public void initialize() {
+    REQUIRE.invoke(Symbol.create("crackle.core"));
+    fVar = (IFn) EVAL.invoke(RT.readString(fn));
+  }
+
+  @Override
+  public IFn getFn() {
     return fVar;
   }
 

@@ -5,6 +5,8 @@ import java.io.Serializable;
 
 public interface PortableFn extends Serializable {
 
-  IFn fn();
+  void initialize();
+
+  IFn getFn();
 
 }

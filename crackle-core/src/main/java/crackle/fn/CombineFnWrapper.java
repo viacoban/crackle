@@ -15,8 +15,15 @@ public final class CombineFnWrapper extends CombineFn<Object, Object> {
   }
 
   @Override
+  public void initialize() {
+    super.initialize();
+    reduceFn.initialize();
+    combineFn.initialize();
+  }
+
+  @Override
   public void process(Pair<Object, Iterable<Object>> input, Emitter<Pair<Object, Object>> emitter) {
-    Object combined = reduceFn.fn().invoke(combineFn.fn(), input.second());
+    Object combined = reduceFn.getFn().invoke(combineFn.getFn(), input.second());
     emitter.emit(new Pair<Object, Object>(input.first(), combined));
   }
 }

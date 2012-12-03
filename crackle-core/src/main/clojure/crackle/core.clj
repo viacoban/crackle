@@ -1,69 +1,47 @@
 (ns crackle.core
-  (:use crackle.impl.pipeline)
+  (:use crackle.impl.core)
   (:use crackle.impl.gen-jar))
 
 (defn pair-of [one two]
   (org.apache.crunch.Pair/of one two))
 
-;todo: dedup all these
-(defmacro fn-mapcat [name [param] type & body]
-  (let [implf (symbol (str name "-internal"))
-        implf-sym `(var ~implf)]
-    `(do
-       (defn ~implf [~param] ~@body)
-       (defn ~name []
-         (fn [pcoll#]
-           (.parallelDo pcoll# ~(str name)
-             (crackle.fn.MapCatFnWrapper. (portable-fn ~implf-sym)) ~(type-form type)))))))
+(defmacro fn-mapcat [name params type & body]
+  (fn-helper name [(first params) (vec (rest params))] body
+    (fn [pcoll sym args]
+      `(.parallelDo ~pcoll ~(str name)
+         (crackle.fn.MapCatFnWrapper. (portable-fn ~sym) (portable-args ~args)) ~(type-form type)))))
 
-(defmacro fn-map [name [param] type & body]
-  (let [implf (symbol (str name "-internal"))
-        implf-sym `(var ~implf)]
-    `(do
-       (defn ~implf [~param] ~@body)
-       (defn ~name []
-         (fn [pcoll#]
-           (.parallelDo pcoll# ~(str name)
-             (crackle.fn.MapFnWrapper. (portable-fn ~implf-sym)) ~(type-form type)))))))
+(defmacro fn-map [name params type & body]
+  (fn-helper name [(first params) (vec (rest params))] body
+    (fn [pcoll sym args]
+      `(.parallelDo ~pcoll ~(str name)
+         (crackle.fn.MapFnWrapper. (portable-fn ~sym) (portable-args ~args)) ~(type-form type)))))
 
-(defmacro fn-combine [name [p1 p2] & body]
-  (let [implf (symbol (str name "-internal"))
-        implf-sym `(var ~implf)]
-    `(do
-       (defn ~implf [~p1 ~p2] ~@body)
-       (defn ~name []
-         (fn [pcoll#]
-           (.combineValues pcoll#
-             (crackle.fn.CombineFnWrapper. (portable-fn #'reduce) (portable-fn ~implf-sym))))))))
+(defmacro fn-combine [name params & body]
+  (fn-helper name params body
+    (fn [pcoll sym args]
+      `(.combineValues ~pcoll
+         (crackle.fn.CombineFnWrapper. (portable-fn #'reduce) (portable-fn ~sym))))))
 
-(defmacro fn-mapv [name [param] vtype & body]
-  (let [implf (symbol (str name "-internal"))
-        implf-sym `(var ~implf)]
-    `(do
-       (defn ~implf [~param] ~@body)
-       (defn ~name []
-         (fn [pcoll#]
-           (.parallelDo pcoll# ~(str name)
-             (crackle.fn.MapValueFnWrapper. (portable-fn ~implf-sym)) (table-type-with-value pcoll# ~(type-form vtype))))))))
+(defmacro fn-mapv [name params vtype & body]
+  (fn-helper name [(first params) (vec (rest params))] body
+    (fn [pcoll sym args]
+      `(.parallelDo ~pcoll ~(str name)
+         (crackle.fn.MapValueFnWrapper. (portable-fn ~sym) (portable-args ~args))
+         (table-type-with-value ~pcoll ~(type-form vtype))))))
 
-(defmacro fn-mapk [name [param] ktype & body]
-  (let [implf (symbol (str name "-internal"))
-        implf-sym `(var ~implf)]
-    `(do
-       (defn ~implf [~param] ~@body)
-       (defn ~name []
-         (fn [pcoll#]
-           (.parallelDo pcoll# ~(str name)
-             (crackle.fn.MapKeyFnWrapper. (portable-fn ~implf-sym)) (table-type-with-key pcoll# ~(type-form ktype))))))))
+(defmacro fn-mapk [name params ktype & body]
+  (fn-helper name [(first params) (vec (rest params))] body
+    (fn [pcoll sym args]
+      `(.parallelDo ~pcoll ~(str name)
+         (crackle.fn.MapKeyFnWrapper. (portable-fn ~sym) (portable-args ~args))
+         (table-type-with-key ~pcoll ~(type-form ktype))))))
 
-(defmacro fn-filter [name [param] & body]
-  (let [implf (symbol (str name "-internal"))
-        implf-sym `(var ~implf)]
-    `(do
-       (defn ~implf [~param] ~@body)
-       (defn ~name []
-         (fn [pcoll#]
-           (.parallelDo pcoll# ~(str name) (crackle.fn.FilterFnWrapper. (portable-fn ~implf-sym))))))))
+(defmacro fn-filter [name params & body]
+  (fn-helper name [(first params) (vec (rest params))] body
+    (fn [pcoll sym args]
+      `(.filter ~pcoll ~(str name)
+         (crackle.fn.FilterFnWrapper. (portable-fn ~sym) (portable-args ~args))))))
 
 (defn count-values []
   (fn [pcoll] (.count pcoll)))
@@ -95,7 +73,7 @@
 (defn sample [probability]
   (fn [pcoll] (.sample pcoll probability)))
 
-(defmacro pipeline [& body]
+(defmacro do-pipeline [& body]
   (let [opts (set (filter keyword? body))
         result (first (filter vector? body))
         forms (filter list? body)

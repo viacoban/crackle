@@ -1,5 +1,5 @@
 (ns crackle.pipeline-test
-  (:use crackle.impl.pipeline)
+  (:use crackle.impl.core)
   (:use clojure.test))
 
 ;(deftest test-expand-method-form

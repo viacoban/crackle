@@ -8,7 +8,6 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import java.nio.ByteBuffer;
 import org.apache.crunch.MapFn;
-import org.apache.crunch.types.PTableType;
 import org.apache.crunch.types.PType;
 import org.apache.crunch.types.writable.Writables;
 
@@ -30,17 +29,10 @@ public final class Clojure {
     Object.class, new PTypeInputFn(), new PTypeOutputFn(), Writables.bytes()
   );
 
-  private static final PTableType<Object, Object> TABLE_TYPE =
-    Writables.tableOf(BINARY_TYPE, BINARY_TYPE);
-
   private Clojure() { }
 
   public static PType<Object> anything() {
     return BINARY_TYPE;
-  }
-
-  public static PTableType<Object, Object> tableOf() {
-    return TABLE_TYPE;
   }
 
   private static class PTypeInputFn extends MapFn<ByteBuffer, Object> {

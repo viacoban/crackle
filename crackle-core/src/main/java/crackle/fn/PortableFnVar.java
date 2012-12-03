@@ -21,11 +21,13 @@ public final class PortableFnVar implements PortableFn {
   }
 
   @Override
-  public IFn fn() {
-    if (var == null) {
-      REQUIRE.invoke(nsSymbol);
-      var = RT.var(nsSymbol.getName(), fnSymbol.getName());
-    }
+  public void initialize() {
+    REQUIRE.invoke(nsSymbol);
+    var = RT.var(nsSymbol.getName(), fnSymbol.getName());
+  }
+
+  @Override
+  public IFn getFn() {
     return var;
   }
 

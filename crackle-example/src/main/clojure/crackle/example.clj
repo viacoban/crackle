@@ -4,28 +4,28 @@
   (:use crackle.core))
 
 ;====== word count example ===============
-(fn-mapcat split-words [line] :strings
-  (clojure.string/split line #"\s+"))
+(fn-mapcat split-words [line re] :strings
+  (clojure.string/split line re))
 
 (defn count-words [input-path output-path]
-  (pipeline (from/text-file input-path)
-    (split-words)
+  (do-pipeline (from/text-file input-path)
+    (split-words #"\s+")
     (count-values)
     (to/text-file output-path)))
 
 ;====== average bytes by ip example ======
 (fn-map parse-line [line] [:strings :clojure]
-  (let [parts (clojure.string/split line #"\s+")]
-    (pair-of (first parts) [(read-string (second parts)) 1])))
+  (let [[address bytes] (take 2 (clojure.string/split line #"\s+"))]
+    (pair-of address [(read-string bytes) 1])))
 
 (fn-combine sum-bytes-and-counts [value1 value2]
-  [(+ (first value1) (first value2)) (+ (second value1) (second value2))])
+  (mapv + value1 value2))
 
-(fn-mapv compute-average [value] :ints
-  (int (apply / value)))
+(fn-mapv compute-average [[bytes requests]] :ints
+  (int (/ bytes requests)))
 
 (defn count-bytes-by-ip [input-path output-path]
-  (pipeline (from/text-file input-path)
+  (do-pipeline (from/text-file input-path)
     (parse-line)
     (group-by-key)
     (sum-bytes-and-counts)
