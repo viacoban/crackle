@@ -10,9 +10,9 @@ A Clojure wrapper for [Apache Crunch](http://incubator.apache.org/crunch/)
 
 ## Installation
 
-Crackle is available on [Clojars](https://clojars.org/)  
-
 **This is development quality code, things might change or stop working**!
+
+Crackle is available on [Clojars](https://clojars.org/)  
 
 with Leiningen:
 
