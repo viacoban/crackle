@@ -8,9 +8,9 @@
   (clojure.string/split line re))
 
 (defn count-words [input-path output-path]
-  (do-pipeline (from/text-file input-path)
+  (do-pipeline (from/text-file input-path) :debug
     (split-words #"\s+")
-    (p-count)
+    (op:count)
     (to/text-file output-path)))
 
 ;====== average bytes by ip example ======
@@ -27,7 +27,7 @@
 (defn count-bytes-by-ip [input-path output-path]
   (do-pipeline (from/text-file input-path)
     (parse-line)
-    (p-group-by-key)
+    (op:group-by-key)
     (sum-bytes-and-counts)
     (compute-average)
     (to/text-file output-path)))

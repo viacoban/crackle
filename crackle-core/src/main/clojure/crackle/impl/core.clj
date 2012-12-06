@@ -48,3 +48,7 @@
     `(do
        (defn ~implf ~params ~@body)
        (defn ~name [& ~args-sym] (fn [~pcoll-sym] ~(runner-body-fn pcoll-sym implf-sym args-sym))))))
+
+(defmacro op-method [name method & args]
+  `(defn ~name [~@args]
+     (fn [pcoll#] (. pcoll# ~method ~@args))))

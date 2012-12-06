@@ -3,7 +3,7 @@ buildscript {
     mavenRepo name: 'clojars', url: 'http://clojars.org/repo'
   }
   dependencies {
-    classpath 'clojuresque:clojuresque:1.5.+'
+    classpath 'org.clojars.viacoban:clojuresque:1.5.3-SNAPSHOT'
   }
 }
 
@@ -30,7 +30,7 @@ subprojects {
   }
 
   dependencies {
-    compile 'org.clojure:clojure:1.4.+'
+    compile 'org.clojure:clojure:1.4.0'
   }
 
   sourceSets {

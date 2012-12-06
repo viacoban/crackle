@@ -1,9 +1,34 @@
 (ns crackle.core
+  (:use crackle.impl.debug)
   (:use crackle.impl.core)
   (:use crackle.impl.gen-jar))
 
 (defn pair-of [one two]
   (org.apache.crunch.Pair/of one two))
+
+(op-method op:count count)
+
+(op-method op:collect-values collectValues)
+
+(op-method op:group-by-key groupByKey)
+
+(op-method op:sort sort ascending)
+
+(op-method op:top top count)
+
+(op-method op:bottom bottom count)
+
+(op-method op:length length)
+
+(op-method op:max max)
+
+(op-method op:min min)
+
+(op-method op:sample sample probability)
+
+(op-method op:keys keys)
+
+(op-method op:values values)
 
 (defmacro fn-mapcat [name params type & body]
   (fn-helper name [(first params) (vec (rest params))] body
@@ -43,51 +68,22 @@
       `(.filter ~pcoll ~(str name)
          (crackle.fn.FilterFnWrapper. (portable-fn ~sym) (portable-args ~args))))))
 
-(defn p-count []
-  (fn [pcoll] (.count pcoll)))
-
-(defn p-collect-values []
-  (fn [pcoll] (.collectValues pcoll)))
-
-(defn p-group-by-key []
-  (fn [pcoll] (.groupByKey pcoll)))
-
-(defn p-sort [ascending]
-  (fn [pcoll] (.sort pcoll ascending)))
-
-(defn p-top [count]
-  (fn [pcoll] (.top pcoll count)))
-
-(defn p-bottom [count]
-  (fn [pcoll] (.bottom pcoll count)))
-
-(defn p-length []
-  (fn [pcoll] (.length pcoll)))
-
-(defn p-max []
-  (fn [pcoll] (.max pcoll)))
-
-(defn p-min []
-  (fn [pcoll] (.min pcoll)))
-
-(defn p-sample [probability]
-  (fn [pcoll] (.sample pcoll probability)))
-
-(defn p-keys []
-  (fn [pcoll] (.keys pcoll)))
-
-(defn p-values []
-  (fn [pcoll] (.values pcoll)))
-
 (defmacro do-pipeline [& body]
   (let [opts (set (filter keyword? body))
         result (first (filter vector? body))
-        forms (filter list? body)
+        forms (filter seq? body)
         source-fn (first forms)
         in-memory? (contains? opts :mem )
         debug? (contains? opts :debug )
         pipeline-sym (gensym "pipeline-")
         source-sym (gensym "source-")]
+
+    (binding [DEBUG-ON (or debug? DEBUG-ON)]
+      (debug "forms" forms)
+      (debug "result" result)
+      (debug "opts" opts)
+      (debug "source" source-fn)
+      (debug "body" body))
 
     `(binding [*compile-path* (get-temp-dir)]
        ~(when-not in-memory? `(.mkdir (clojure.java.io/file *compile-path*)))
