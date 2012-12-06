@@ -1,4 +1,5 @@
 (ns crackle.impl.gen-jar
+  (:use crackle.impl.debug)
   (:import [org.apache.crunch Pipeline])
   (:import [org.apache.crunch.util DistCache])
   (:import [org.apache.commons.io IOUtils])
@@ -31,6 +32,10 @@
 
 (defn setup-job-classpath [^Pipeline pipeline]
   (let [configuration (.getConfiguration pipeline)
-        ^File jar-file (jar-dir *compile-path*)]
+        ^File jar-file (jar-dir *compile-path*)
+        lib-dir (System/getProperty "crackle.lib.dir")]
+    (debug "crackle.lib.dir" lib-dir)
+    (debug "job jar" jar-file)
+    (if (nil? lib-dir) (throw (IllegalStateException. "crackle.lib.dir not set")))
     (DistCache/addJarToDistributedCache configuration jar-file)
-    (DistCache/addJarDirToDistributedCache configuration (System/getProperty "crackle.lib.dir"))))
+    (DistCache/addJarDirToDistributedCache configuration lib-dir)))

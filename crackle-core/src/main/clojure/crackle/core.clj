@@ -94,5 +94,5 @@
          ~(when debug? `(.enableDebug ~pipeline-sym))
          ~(when-not in-memory? `(setup-job-classpath ~pipeline-sym))
          (.done ~pipeline-sym)
-         ~result))))
+         ~(if (= 1 (count result)) (first result) result)))))
 
