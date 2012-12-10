@@ -6,6 +6,9 @@
 
 (def output-fn (.getOutputMapFn (Clojure/anything)))
 
+(.initialize input-fn)
+(.initialize output-fn)
+
 (defn serialize-deserialize [v]
   (.map input-fn (.map output-fn v)))
 
