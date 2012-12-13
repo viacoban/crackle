@@ -74,7 +74,9 @@
         in-memory? (contains? opts :mem )
         debug? (contains? opts :debug )
         pipeline-sym (gensym "pipeline-")
-        source-sym (gensym "source-")]
+        source-sym (gensym "source-")
+        pipeline-forms (expand-pipeline-forms source-sym (rest forms))
+        last-result (first (take-last 2 pipeline-forms))]
 
     (binding [DEBUG-ON (or debug? DEBUG-ON)]
       (debug "forms" forms)
@@ -84,13 +86,14 @@
       (debug "body" body))
 
     `(binding [*compile-path* (get-temp-dir)]
-       ~(when-not in-memory? `(.mkdir (clojure.java.io/file *compile-path*)))
+       ~(when-not in-memory?
+          `(.mkdir (clojure.java.io/file *compile-path*)))
 
        (let [~pipeline-sym (crackle.pipeline.PipelineFactory/getPipeline ~in-memory?)
              ~source-sym (~source-fn ~pipeline-sym)
-            ~@(expand-pipeline-forms source-sym (rest forms))]
+             ~@pipeline-forms]
          ~(when debug? `(.enableDebug ~pipeline-sym))
          ~(when-not in-memory? `(setup-job-classpath ~pipeline-sym))
          (.done ~pipeline-sym)
-         ~(if (= 1 (count result)) (first result) result)))))
+         ~(if (empty? result) last-result result)))))
 
