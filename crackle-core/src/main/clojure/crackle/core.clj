@@ -1,72 +1,70 @@
 (ns crackle.core
   (:use crackle.impl.debug)
-  (:use crackle.impl.core)
+  (:use crackle.impl.types)
+  (:use crackle.impl.portable)
   (:use crackle.impl.gen-jar))
 
 (defn pair-of [one two]
   (org.apache.crunch.Pair/of one two))
 
-(op-method op:count count)
-
-(op-method op:collect-values collectValues)
-
-(op-method op:group-by-key groupByKey)
-
-(op-method op:sort sort ascending)
-
-(op-method op:top top count)
-
-(op-method op:bottom bottom count)
-
-(op-method op:length length)
-
-(op-method op:max max)
-
-(op-method op:min min)
-
-(op-method op:sample sample probability)
-
-(op-method op:keys keys)
-
-(op-method op:values values)
+(defn- fn-helper [name params body runner-body-fn]
+  (let [implf (symbol (str name "-internal"))
+        implf-sym `(var ~implf)
+        pcoll-sym (gensym "pcoll")
+        args-sym (gensym "args")]
+    `(do
+       (defn ~implf ~params ~@body)
+       (defn ~name [& ~args-sym] (fn [~pcoll-sym] ~(runner-body-fn pcoll-sym implf-sym args-sym))))))
 
 (defmacro fn-mapcat [name params type & body]
   (fn-helper name [(first params) (vec (rest params))] body
     (fn [pcoll sym args]
       `(.parallelDo ~pcoll ~(str name)
-         (crackle.fn.MapCatFnWrapper. (portable-fn ~sym) (portable-args ~args)) ~(type-form type)))))
+         (crackle.fn.MapCatFnWrapper. (pfn ~sym) (pargs ~args)) ~(global-type-resolver type)))))
 
 (defmacro fn-map [name params type & body]
   (fn-helper name [(first params) (vec (rest params))] body
     (fn [pcoll sym args]
       `(.parallelDo ~pcoll ~(str name)
-         (crackle.fn.MapFnWrapper. (portable-fn ~sym) (portable-args ~args)) ~(type-form type)))))
+         (crackle.fn.MapFnWrapper. (pfn ~sym) (pargs ~args)) ~(global-type-resolver type)))))
 
 (defmacro fn-combine [name params & body]
   (fn-helper name params body
     (fn [pcoll sym args]
       `(.combineValues ~pcoll
-         (crackle.fn.CombineFnWrapper. (portable-fn #'reduce) (portable-fn ~sym))))))
+         (crackle.fn.CombineFnWrapper. (pfn #'reduce) (pfn ~sym))))))
 
 (defmacro fn-mapv [name params vtype & body]
   (fn-helper name [(first params) (vec (rest params))] body
     (fn [pcoll sym args]
       `(.parallelDo ~pcoll ~(str name)
-         (crackle.fn.MapValueFnWrapper. (portable-fn ~sym) (portable-args ~args))
-         (table-type-with-value ~pcoll ~(type-form vtype))))))
+         (crackle.fn.MapValueFnWrapper. (pfn ~sym) (pargs ~args))
+         (table-type-with-value ~pcoll ~(global-type-resolver vtype))))))
 
 (defmacro fn-mapk [name params ktype & body]
   (fn-helper name [(first params) (vec (rest params))] body
     (fn [pcoll sym args]
       `(.parallelDo ~pcoll ~(str name)
-         (crackle.fn.MapKeyFnWrapper. (portable-fn ~sym) (portable-args ~args))
-         (table-type-with-key ~pcoll ~(type-form ktype))))))
+         (crackle.fn.MapKeyFnWrapper. (pfn ~sym) (pargs ~args))
+         (table-type-with-key ~pcoll ~(global-type-resolver ktype))))))
 
 (defmacro fn-filter [name params & body]
   (fn-helper name [(first params) (vec (rest params))] body
     (fn [pcoll sym args]
       `(.filter ~pcoll ~(str name)
-         (crackle.fn.FilterFnWrapper. (portable-fn ~sym) (portable-args ~args))))))
+         (crackle.fn.FilterFnWrapper. (pfn ~sym) (pargs ~args))))))
+
+(defn- expand-pipeline-forms [source-sym forms]
+  (loop [previous-sym source-sym
+         more forms
+         result []]
+    (if (empty? more) result
+      (let [current (first more)
+            call (take-while #(not (keyword? %)) current)
+            opts (apply hash-map (drop-while #(not (keyword? %)) current))
+            to-sym (get opts :as (gensym))
+            from-sym (get opts :with previous-sym)]
+        (recur to-sym (rest more) (concat result [to-sym (list call from-sym)]))))))
 
 (defmacro do-pipeline [& body]
   (let [opts (set (filter keyword? body))

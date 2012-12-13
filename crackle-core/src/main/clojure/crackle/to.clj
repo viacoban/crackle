@@ -1,5 +1,5 @@
 (ns crackle.to
-  (:use crackle.impl.core)
+;  (:use crackle.impl.types)
   (:import [org.apache.crunch.types.writable WritableTypeFamily])
   (:import [org.apache.crunch.fn IdentityFn])
   (:import [org.apache.crunch.io To At]))
