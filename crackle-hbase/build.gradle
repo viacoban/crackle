@@ -2,9 +2,6 @@ dependencies {
   compile project(':crackle-core')
   compile 'org.apache.crunch:crunch-hbase:0.4.0-incubating'
 
-  development 'org.apache.hadoop:hadoop-core:0.20.2-cdh3u2'
-  development 'org.apache.hbase:hbase:0.90.4-cdh3u2'
-
-  testCompile 'org.apache.hadoop:hadoop-core:0.20.2-cdh3u2'
-  testCompile 'org.apache.hbase:hbase:0.90.4-cdh3u2'
+  provided 'org.apache.hadoop:hadoop-core:0.20.2-cdh3u2'
+  provided 'org.apache.hbase:hbase:0.90.4-cdh3u2'
 }

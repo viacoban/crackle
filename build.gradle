@@ -26,20 +26,23 @@ subprojects {
   }
 
   configurations {
+    provided
+    compile.extendsFrom provided
+
     all*.exclude module: 'thrift'
+    all*.resolutionStrategy {
+      force 'org.slf4j:slf4j-api:1.4.3'
+      force 'org.slf4j:slf4j-log4j12:1.4.3'
+    }
   }
 
   dependencies {
     compile 'org.clojure:clojure:1.4.0'
   }
 
-  sourceSets {
-    main { compileClasspath += configurations.development }
-  }
-
   idea {
     module {
-      scopes.PROVIDED.plus += configurations.development
+      scopes.PROVIDED.plus += configurations.provided
     }
   }
 
