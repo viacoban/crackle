@@ -1,6 +1,6 @@
 > **Clojure aphorism**:
-> Clojure programmers don’t write their apps in Clojure.
-> They write the language that they use to write their apps in Clojure.
+> Clojure programmers don’t write their apps in Clojure.  
+> They write the language that they use to write their apps in Clojure.  
 >
 >  _"The Joy of Clojure"_
 
@@ -10,14 +10,12 @@ A Clojure wrapper for [Apache Crunch](http://incubator.apache.org/crunch/)
 
 ## Installation
 
-**This is development quality code, things might change or stop working**!
-
-Crackle is available on [Clojars](https://clojars.org/)
+Crackle is available on [Clojars](https://clojars.org/), please report any issues [here](https://github.com/viacoban/crackle/issues).
 
 with Leiningen:
 
 ```clj
-[crackle/crackle-core "0.4.0-SNAPSHOT"]
+[crackle/crackle-core "0.4.0"]
 ```
 
 with Maven:
@@ -26,7 +24,7 @@ with Maven:
 <dependency>
  <groupId>crackle</groupId>
  <artifactId>crackle-core</artifactId>
- <version>0.4.0-SNAPSHOT</version>
+ <version>0.4.0</version>
 </dependency>
 ```
 
