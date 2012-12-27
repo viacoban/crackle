@@ -93,7 +93,7 @@
              ~source-sym (~source-fn ~pipeline-sym)
              ~@pipeline-forms]
          ~(when debug? `(.enableDebug ~pipeline-sym))
-         ~(when-not in-memory? `(setup-job-classpath ~pipeline-sym))
+         ~(when-not in-memory? `(setup-job-dependencies ~pipeline-sym))
          (.done ~pipeline-sym)
          ~(if (empty? result) last-result result)))))
 

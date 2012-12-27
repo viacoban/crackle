@@ -1,8 +1,9 @@
 (ns crackle.impl.gen-jar
   (:use crackle.impl.debug)
+  (:require [clojure.java.io :as io])
   (:import [org.apache.crunch Pipeline])
   (:import [org.apache.crunch.util DistCache])
-  (:import [org.apache.commons.io IOUtils])
+  (:import [org.apache.commons.io IOUtils FileUtils])
   (:import [java.io File FileOutputStream FileInputStream])
   (:import [java.util.jar JarOutputStream JarEntry]))
 
@@ -12,26 +13,27 @@
 (defn get-temp-dir []
   (str crackle-tmp-root "/crackletmp" (System/currentTimeMillis)))
 
-(defn get-jar-entry-name [parent ^File file]
+(defn next-entry-name [parent ^File file]
   (str parent (.getName file) (if (.isDirectory file) "/" "")))
 
-(defn add-file [^File file ^String entry-name ^JarOutputStream stream]
+(defn add-next [^File file ^String entry-name ^JarOutputStream stream]
   (let [^JarEntry entry (JarEntry. entry-name)]
     (.putNextEntry stream entry)
-    (when (.isFile file) (IOUtils/copy (FileInputStream. file) stream))
+    (when (.isFile file)
+      (with-open [source (io/input-stream file)]
+        (IOUtils/copy source stream)))
     (.closeEntry stream)
-
     (when (.isDirectory file)
       (doseq [f (.listFiles file)]
-        (add-file f (get-jar-entry-name entry-name f) stream)))))
+        (add-next f (next-entry-name entry-name f) stream)))))
 
-(defn jar-dir [^String dir]
-  (let [jar-file (File. (str dir ".jar"))]
-    (with-open [stream (JarOutputStream. (FileOutputStream. jar-file))]
-      (add-file (File. dir) "" stream))
+(defn create-jar [dir]
+  (let [jar-file (io/file (str dir ".jar"))]
+    (with-open [stream (JarOutputStream. (io/output-stream jar-file))]
+      (add-next (io/file dir) "" stream))
     jar-file))
 
-(defn include-jar? [url]
+(defn jar-to-include? [url]
   (let [java-home (System/getProperty "java.home")
         file-path (.getFile url)]
     (cond
@@ -39,21 +41,36 @@
       (.endsWith file-path ".jar") true
       :else false)))
 
-(defn find-classpath-jars []
+(defn find-classpath-entries []
   (loop [class-loader (.getContextClassLoader (Thread/currentThread))
-         jars []]
-    (if (nil? class-loader) jars
-      (recur (.getParent class-loader) (concat jars (filter include-jar? (.getURLs class-loader)))))))
+         entries []]
+    (if (nil? class-loader) entries
+      (recur (.getParent class-loader)
+        (concat entries (.getURLs class-loader))))))
 
-(defn setup-job-classpath [^Pipeline pipeline]
+(defn setup-job-from-classpath [configuration compile-path]
+  (doseq [entry (find-classpath-entries)]
+    (let [entry-file (io/file (.getFile entry))]
+      (cond
+        (not (.exists entry-file))
+        (debug "unexpected classpath entry" entry)
+
+        (jar-to-include? entry)
+        (DistCache/addJarToDistributedCache configuration entry-file)
+
+        (.isDirectory entry-file)
+        (FileUtils/copyDirectory entry-file compile-path)
+
+        :else
+        (debug "skipped" entry)))
+    (DistCache/addJarToDistributedCache configuration (create-jar compile-path))))
+
+(defn setup-job-dependencies [^Pipeline pipeline]
   (let [configuration (.getConfiguration pipeline)
-        ^File jar-file (jar-dir *compile-path*)
         lib-dir (System/getProperty libs-dir-property)]
-    (debug libs-dir-property lib-dir)
-    (debug "job jar" jar-file)
-    (DistCache/addJarToDistributedCache configuration jar-file)
-    (if (nil? lib-dir)
-      (doseq [jar-url (find-classpath-jars)]
-        (debug jar-url)
-        (DistCache/addJarToDistributedCache configuration (.getFile jar-url)))
-      (DistCache/addJarDirToDistributedCache configuration lib-dir))))
+    (when-not (nil? lib-dir)
+      (debug libs-dir-property lib-dir)
+      (DistCache/addJarDirToDistributedCache configuration lib-dir))
+    (when (nil? lib-dir)
+      (debug libs-dir-property "empty. using current classpath.")
+      (setup-job-from-classpath configuration (io/file *compile-path*)))))
