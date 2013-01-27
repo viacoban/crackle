@@ -21,8 +21,14 @@ public final class FilterFnWrapper extends FilterFn<Object> {
 
   @Override
   public boolean accept(Object input) {
-    Boolean result = (Boolean) filterFn.getFn().invoke(input, args.getArgs());
-    return result != null && result;
+    Object result = filterFn.getFn().invoke(input, args.getArgs());
+    if (result == null) {
+      return false;
+    }
+    if (result instanceof Boolean) {
+      return (Boolean) result;
+    }
+    return true;
   }
 
 }
