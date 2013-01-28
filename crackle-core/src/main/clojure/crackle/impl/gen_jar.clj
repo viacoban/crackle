@@ -4,11 +4,15 @@
   (:import [org.apache.crunch Pipeline])
   (:import [org.apache.crunch.util DistCache])
   (:import [org.apache.commons.io IOUtils FileUtils])
+  (:import [org.apache.hadoop.fs Path FileSystem])
+  (:import [org.apache.hadoop.filecache DistributedCache])
   (:import [java.io File FileOutputStream FileInputStream])
   (:import [java.util.jar JarOutputStream JarEntry]))
 
 (def ^:dynamic crackle-tmp-root "/tmp")
 (def libs-dir-property "crackle.job.deps.dir")
+(def ^:dynamic *cached-libs-dir*
+  (str "/tmp/" (System/getProperty "user.name") "/cache/libs/"))
 
 (defn get-temp-dir []
   (str crackle-tmp-root "/crackletmp" (System/currentTimeMillis)))
@@ -50,13 +54,18 @@
 
 (defn setup-job-from-classpath [configuration compile-path]
   (doseq [entry (find-classpath-entries)]
-    (let [entry-file (io/file (.getFile entry))]
+    (let [file-system (FileSystem/get configuration)
+          entry-file (io/file (.getFile entry))]
       (cond
         (not (.exists entry-file))
         (debug "unexpected classpath entry" entry)
 
         (jar-to-include? entry)
-        (DistCache/addJarToDistributedCache configuration entry-file)
+        (let [src-path (Path. (.getCanonicalPath entry-file))
+              dst-path (Path. (str *cached-libs-dir* (.getName entry-file)))]
+          (if-not (.exists file-system dst-path)
+            (.copyFromLocalFile file-system src-path dst-path))
+          (DistributedCache/addArchiveToClassPath dst-path configuration))
 
         (.isDirectory entry-file)
         (FileUtils/copyDirectory entry-file compile-path)
