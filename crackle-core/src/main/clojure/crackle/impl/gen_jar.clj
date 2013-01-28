@@ -63,6 +63,7 @@
         (jar-to-include? entry)
         (let [src-path (Path. (.getCanonicalPath entry-file))
               dst-path (Path. (str *cached-libs-dir* (.getName entry-file)))]
+          (debug "adding to distributed cache" entry)
           (if-not (.exists file-system dst-path)
             (.copyFromLocalFile file-system src-path dst-path))
           (DistributedCache/addArchiveToClassPath dst-path configuration))
