@@ -15,7 +15,7 @@ Crackle is available on [Clojars](https://clojars.org/), please report any issue
 with Leiningen:
 
 ```clj
-[crackle/crackle-core "0.4.1-SNAPSHOT"]
+[crackle/crackle-core "0.4.1"]
 ```
 
 with Maven:
@@ -24,7 +24,7 @@ with Maven:
 <dependency>
  <groupId>crackle</groupId>
  <artifactId>crackle-core</artifactId>
- <version>0.4.1-SNAPSHOT</version>
+ <version>0.4.1</version>
 </dependency>
 ```
 
@@ -70,6 +70,6 @@ with Maven:
 
 ## License
 
-Copyright © 2012 Victor Iacoban <victor.iacoban@gmail.com>
+Copyright © 2012-2013 Victor Iacoban <victor.iacoban@gmail.com>
 
 Distributed under the [Eclipse Public License](http://www.eclipse.org/legal/epl-v10.html), the same as Clojure.
