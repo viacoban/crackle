@@ -4,8 +4,7 @@
   (:import [crackle.types Clojure])
   (:import [org.apache.crunch.types.writable Writables])
   (:import [org.apache.crunch.types.avro Avros])
-  (:import [org.apache.hadoop.io BytesWritable Text])
-  )
+  (:import [org.apache.hadoop.io BytesWritable Text]))
 
 (defn compare-with-eval [types result]
   (let [resolved (global-type-resolver types)]

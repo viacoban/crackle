@@ -25,6 +25,10 @@ public final class MapCatFnWrapper extends DoFn<Object, Object> {
   @Override
   public void process(Object input, Emitter<Object> emitter) {
     Object result = fn.getFn().invoke(input, args.getArgs());
+    if (result == null) {
+      return;
+    }
+
     if (result instanceof IPersistentCollection) {
       ISeq values = ((IPersistentCollection) result).seq();
       while (values != null) {
