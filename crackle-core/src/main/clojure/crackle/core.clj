@@ -58,10 +58,10 @@
 (defn sample! [acceptance-probability]
   (fn [^PCollection pcoll] (Sample/sample pcoll acceptance-probability)))
 
-(defn keys! [limit]
+(defn keys! []
   (fn [^PTable pcoll] (PTables/keys pcoll)))
 
-(defn values! [limit]
+(defn values! []
   (fn [^PTable pcoll] (PTables/values pcoll)))
 
 (defn parallel-do! [do-fn]
