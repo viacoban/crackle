@@ -64,7 +64,7 @@
 (defn values! [limit]
   (fn [^PTable pcoll] (PTables/values pcoll)))
 
-(defn parallel-do! [do-fn ptype]
+(defn parallel-do! [do-fn]
   {:pre [(:name do-fn)
          (:result-type do-fn)
          (:instance do-fn)
