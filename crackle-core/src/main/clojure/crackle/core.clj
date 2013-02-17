@@ -97,6 +97,9 @@
             from-sym (get opts :with previous-sym)]
         (recur to-sym (rest more) (concat result [to-sym (list call from-sym)]))))))
 
+(defn when* [cond? & body]
+  (if cond? (apply comp body) identity))
+
 (defmacro do-pipeline [& body]
   (let [opts (set (filter keyword? body))
         result (first (filter vector? body))
