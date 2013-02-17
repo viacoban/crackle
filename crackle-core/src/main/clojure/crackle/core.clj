@@ -9,23 +9,23 @@
 (defn pair-of [one two]
   (org.apache.crunch.Pair/of one two))
 
-(defmacro defn-map [ & params ]
-  (generate-internal-fn crackle.fn.MapFnWrapper params))
+(defmacro defn-map [ name args result-type [_ [item] impl-body] ]
+  (generate-internal-fn crackle.fn.MapFnWrapper name result-type [item] args impl-body))
 
-(defmacro defn-mapcat [ & params ]
-  (generate-internal-fn crackle.fn.MapCatFnWrapper params))
+(defmacro defn-mapcat [ name args result-type [_ [item] impl-body] ]
+  (generate-internal-fn crackle.fn.MapCatFnWrapper name result-type [item] args impl-body))
 
-(defmacro defn-mapk [ & params ]
-  (generate-internal-fn crackle.fn.MapKeyFnWrapper params))
+(defmacro defn-mapk [ name args result-type [_ [key] impl-body] ]
+  (generate-internal-fn crackle.fn.MapKeyFnWrapper name result-type [key] args impl-body))
 
-(defmacro defn-mapv [ & params ]
-  (generate-internal-fn crackle.fn.MapValueFnWrapper params))
+(defmacro defn-mapv [ name args result-type [_ [value] impl-body] ]
+  (generate-internal-fn crackle.fn.MapValueFnWrapper name result-type [value] args impl-body))
 
-(defmacro defn-filter [ & params ]
-  (generate-internal-fn crackle.fn.FilterFnWrapper params))
+(defmacro defn-filter [ name args [_ [item] impl-body] ]
+  (generate-internal-fn crackle.fn.FilterFnWrapper name nil [item] args impl-body))
 
-(defmacro defn-combine [ & params ]
-  (generate-internal-fn crackle.fn.CombineFnWrapper params))
+(defmacro defn-combine [ name args [_ [value1 value2] impl-body] ]
+  (generate-internal-fn crackle.fn.CombineFnWrapper name nil [value1 value2] args impl-body))
 
 (defn count! []
   (fn [^PCollection pcoll] (Aggregate/count pcoll)))
@@ -64,14 +64,26 @@
 (defn values! [limit]
   (fn [^PTable pcoll] (PTables/values pcoll)))
 
-(defn parallel-do! [^DoFn do-fn ptype]
-  (fn [^PCollection pcoll] (.parallelDo pcoll do-fn (global-type-resolver ptype))))
+(defn parallel-do! [do-fn ptype]
+  {:pre [(:name do-fn)
+         (:result-type do-fn)
+         (:instance do-fn)
+         (isa? (:instance do-fn) DoFn)]}
+  (fn [^PCollection pcoll]
+    (.parallelDo pcoll (:name do-fn) (:instance do-fn) (global-type-resolver (:result-type do-fn)))))
 
-(defn combine-values! [^CombineFn combine-fn]
-  (fn [^PGroupedTable pcoll] (.combineValues pcoll combine-fn)))
+(defn combine-values! [combine-fn]
+  {:pre [(:instance combine-fn)
+         (isa? (:instance combine-fn) CombineFn)]}
+  (fn [^PGroupedTable pcoll]
+    (.combineValues pcoll (:instance combine-fn))))
 
-(defn filter! [^FilterFn filter-fn]
-  (fn [^PCollection pcoll] (.filter pcoll filter-fn)))
+(defn filter! [filter-fn]
+  {:pre [(:name filter-fn)
+         (:instance filter-fn)
+         (isa? (:instance filter-fn) FilterFn)]}
+  (fn [^PCollection pcoll]
+    (.filter pcoll (:name filter-fn) (:instance filter-fn))))
 
 (defn- expand-pipeline-forms [source-sym forms]
   (loop [previous-sym source-sym
@@ -79,9 +91,11 @@
          result []]
     (if (empty? more) result
       (let [current (first more)
-            to-sym (gensym)
-            from-sym previous-sym]
-        (recur to-sym (rest more) (concat result [to-sym (list current from-sym)]))))))
+            call (take-while #(not (keyword? %)) current)
+            opts (apply hash-map (drop-while #(not (keyword? %)) current))
+            to-sym (get opts :as (gensym))
+            from-sym (get opts :with previous-sym)]
+        (recur to-sym (rest more) (concat result [to-sym (list call from-sym)]))))))
 
 (defmacro do-pipeline [& body]
   (let [opts (set (filter keyword? body))

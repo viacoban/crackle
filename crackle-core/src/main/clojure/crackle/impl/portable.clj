@@ -14,12 +14,14 @@
     :else
     (throw (IllegalArgumentException. (str "not a var and not a list: " (pr-str f))))))
 
-(defn generate-internal-fn [wrapper-class [fn-name extra-args [_ primary-args impl-body]]]
+(defn generate-internal-fn [wrapper-class fn-name result-type primary-args extra-args impl-body]
   (let [internal-fn-name# (symbol (str fn-name "-internal"))
         internal-fn-name-symbol# `(var ~internal-fn-name#)
         args# (into [] (concat primary-args extra-args))]
     `(do
        (defn ~internal-fn-name# ~args# ~impl-body)
        (defn ~fn-name ~extra-args
-         (new ~wrapper-class (pfn ~internal-fn-name-symbol#) (pargs ~extra-args))))))
+         {:name ~(str fn-name)
+          :result-type ~result-type
+          :instance (new ~wrapper-class (pfn ~internal-fn-name-symbol#) (pargs ~extra-args))}))))
 
