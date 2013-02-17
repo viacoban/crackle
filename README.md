@@ -1,6 +1,6 @@
 > **Clojure aphorism**:
-> Clojure programmers don’t write their apps in Clojure.  
-> They write the language that they use to write their apps in Clojure.  
+> Clojure programmers don’t write their apps in Clojure.
+> They write the language that they use to write their apps in Clojure.
 >
 >  _"The Joy of Clojure"_
 
@@ -15,7 +15,7 @@ Crackle is available on [Clojars](https://clojars.org/), please report any issue
 with Leiningen:
 
 ```clj
-[crackle/crackle-core "0.4.2"]
+[crackle/crackle-core "0.5.0-SNAPSHOT"]
 ```
 
 with Maven:
@@ -24,7 +24,7 @@ with Maven:
 <dependency>
  <groupId>crackle</groupId>
  <artifactId>crackle-core</artifactId>
- <version>0.4.2</version>
+ <version>0.5.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -44,7 +44,7 @@ with Maven:
 (defn count-words [input-path output-path]
   (do-pipeline (from/text-file input-path) :debug
     (split-words #"\s+")
-    (op/count)
+    (op/count!)
     (to/text-file output-path)))
 
 ;====== average bytes by ip example ======
@@ -61,7 +61,7 @@ with Maven:
 (defn count-bytes-by-ip [input-path output-path]
   (do-pipeline (from/text-file input-path)
     (parse-line)
-    (op/group-by-key)
+    (op/group-by-key!)
     (sum-bytes-and-counts)
     (compute-average)
     (to/text-file output-path)))

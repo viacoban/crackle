@@ -2,57 +2,76 @@
   (:use crackle.impl.debug)
   (:use crackle.impl.types)
   (:use crackle.impl.portable)
-  (:use crackle.impl.gen-jar))
+  (:use crackle.impl.gen-jar)
+  (:import [org.apache.crunch PCollection PTable DoFn PGroupedTable CombineFn FilterFn]
+           [org.apache.crunch.lib Aggregate Sort Sort$Order Sample PTables]))
 
 (defn pair-of [one two]
   (org.apache.crunch.Pair/of one two))
 
-(defn- fn-helper [name params body runner-body-fn]
-  (let [implf (symbol (str name "-internal"))
-        implf-sym `(var ~implf)
-        pcoll-sym (gensym "pcoll")
-        args-sym (gensym "args")]
-    `(do
-       (defn ~implf ~params ~@body)
-       (defn ~name [& ~args-sym] (fn [~pcoll-sym] ~(runner-body-fn pcoll-sym implf-sym args-sym))))))
+(defmacro defn-map [ & params ]
+  (generate-internal-fn crackle.fn.MapFnWrapper params))
 
-(defmacro fn-mapcat [name params type & body]
-  (fn-helper name [(first params) (vec (rest params))] body
-    (fn [pcoll sym args]
-      `(.parallelDo ~pcoll ~(str name)
-         (crackle.fn.MapCatFnWrapper. (pfn ~sym) (pargs ~args)) ~(global-type-resolver type)))))
+(defmacro defn-mapcat [ & params ]
+  (generate-internal-fn crackle.fn.MapCatFnWrapper params))
 
-(defmacro fn-map [name params type & body]
-  (fn-helper name [(first params) (vec (rest params))] body
-    (fn [pcoll sym args]
-      `(.parallelDo ~pcoll ~(str name)
-         (crackle.fn.MapFnWrapper. (pfn ~sym) (pargs ~args)) ~(global-type-resolver type)))))
+(defmacro defn-mapk [ & params ]
+  (generate-internal-fn crackle.fn.MapKeyFnWrapper params))
 
-(defmacro fn-combine [name params & body]
-  (fn-helper name params body
-    (fn [pcoll sym args]
-      `(.combineValues ~pcoll
-         (crackle.fn.CombineFnWrapper. (pfn #'reduce) (pfn ~sym))))))
+(defmacro defn-mapv [ & params ]
+  (generate-internal-fn crackle.fn.MapValueFnWrapper params))
 
-(defmacro fn-mapv [name params vtype & body]
-  (fn-helper name [(first params) (vec (rest params))] body
-    (fn [pcoll sym args]
-      `(.parallelDo ~pcoll ~(str name)
-         (crackle.fn.MapValueFnWrapper. (pfn ~sym) (pargs ~args))
-         (table-type-with-value ~pcoll ~(global-type-resolver vtype))))))
+(defmacro defn-filter [ & params ]
+  (generate-internal-fn crackle.fn.FilterFnWrapper params))
 
-(defmacro fn-mapk [name params ktype & body]
-  (fn-helper name [(first params) (vec (rest params))] body
-    (fn [pcoll sym args]
-      `(.parallelDo ~pcoll ~(str name)
-         (crackle.fn.MapKeyFnWrapper. (pfn ~sym) (pargs ~args))
-         (table-type-with-key ~pcoll ~(global-type-resolver ktype))))))
+(defmacro defn-combine [ & params ]
+  (generate-internal-fn crackle.fn.CombineFnWrapper params))
 
-(defmacro fn-filter [name params & body]
-  (fn-helper name [(first params) (vec (rest params))] body
-    (fn [pcoll sym args]
-      `(.filter ~pcoll ~(str name)
-         (crackle.fn.FilterFnWrapper. (pfn ~sym) (pargs ~args))))))
+(defn count! []
+  (fn [^PCollection pcoll] (Aggregate/count pcoll)))
+
+(defn collect-value! []
+  (fn [^PTable pcoll] (Aggregate/collectValues pcoll)))
+
+(defn group-by-key! []
+  (fn [^PTable pcoll] (.groupByKey pcoll)))
+
+(defn sort! [ascending?]
+  (fn [^PCollection pcoll]
+    (Sort/sort pcoll (if ascending? (Sort$Order/ASCENDING) (Sort$Order/DESCENDING)))))
+
+(defn top! [limit]
+  (fn [^PTable pcoll] (Aggregate/top pcoll limit true)))
+
+(defn bottom! [limit]
+  (fn [^PTable pcoll] (Aggregate/top pcoll limit false)))
+
+(defn length! []
+  (fn [^PCollection pcoll] (Aggregate/length pcoll)))
+
+(defn max! []
+  (fn [^PCollection pcoll] (Aggregate/max pcoll)))
+
+(defn min! []
+  (fn [^PCollection pcoll] (Aggregate/min pcoll)))
+
+(defn sample! [acceptance-probability]
+  (fn [^PCollection pcoll] (Sample/sample pcoll acceptance-probability)))
+
+(defn keys! [limit]
+  (fn [^PTable pcoll] (PTables/keys pcoll)))
+
+(defn values! [limit]
+  (fn [^PTable pcoll] (PTables/values pcoll)))
+
+(defn parallel-do! [^DoFn do-fn ptype]
+  (fn [^PCollection pcoll] (.parallelDo pcoll do-fn (global-type-resolver ptype))))
+
+(defn combine-values! [^CombineFn combine-fn]
+  (fn [^PGroupedTable pcoll] (.combineValues pcoll combine-fn)))
+
+(defn filter! [^FilterFn filter-fn]
+  (fn [^PCollection pcoll] (.filter pcoll filter-fn)))
 
 (defn- expand-pipeline-forms [source-sym forms]
   (loop [previous-sym source-sym
@@ -60,11 +79,9 @@
          result []]
     (if (empty? more) result
       (let [current (first more)
-            call (take-while #(not (keyword? %)) current)
-            opts (apply hash-map (drop-while #(not (keyword? %)) current))
-            to-sym (get opts :as (gensym))
-            from-sym (get opts :with previous-sym)]
-        (recur to-sym (rest more) (concat result [to-sym (list call from-sym)]))))))
+            to-sym (gensym)
+            from-sym previous-sym]
+        (recur to-sym (rest more) (concat result [to-sym (list current from-sym)]))))))
 
 (defmacro do-pipeline [& body]
   (let [opts (set (filter keyword? body))

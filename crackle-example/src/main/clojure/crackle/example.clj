@@ -1,34 +1,36 @@
 (ns crackle.example
   (:use crackle.core)
   (:require [crackle.from :as from])
-  (:require [crackle.to :as to])
-  (:require [crackle.ops :as op]))
+  (:require [crackle.to :as to]))
 
 ;====== word count example ===============
-(fn-mapcat split-words [line re] :strings
-  (clojure.string/split line re))
+(defn-mapcat split-words [regexp]
+  (fn [line] (clojure.string/split line regexp)))
 
 (defn count-words [input-path output-path]
   (do-pipeline (from/text-file input-path) :debug
-    (split-words #"\s+")
-    (op/count)
+    (parallel-do! (split-words #"\s+") :strings)
+    (count!)
     (to/text-file output-path)))
 
-;====== average bytes by ip example ======
-(fn-map parse-line [line] [:strings :clojure]
-  (let [[address bytes] (clojure.string/split line #"\s+")]
-    (pair-of address [(read-string bytes) 1])))
+;;====== average bytes by ip example ======
+(defn-mapcat parse-line [regexp]
+  (fn [line]
+    (let [[address bytes] (clojure.string/split line regexp)]
+      (pair-of address [(read-string bytes) 1]))))
 
-(fn-combine sum-bytes-and-counts [value1 value2]
-  (mapv + value1 value2))
+(defn-combine sum-bytes-and-counts []
+  (fn [value1 value2]
+    (mapv + value1 value2)))
 
-(fn-mapv compute-average [[bytes requests]] :ints
-  (int (/ bytes requests)))
+(defn-mapv compute-average []
+  (fn [[bytes requests]]
+    (int (/ bytes requests))))
 
 (defn count-bytes-by-ip [input-path output-path]
   (do-pipeline (from/text-file input-path)
-    (parse-line)
-    (op/group-by-key)
-    (sum-bytes-and-counts)
-    (compute-average)
+    (parallel-do! (parse-line #"\s+") [:strings :clojure])
+    (group-by-key!)
+    (combine-values! (sum-bytes-and-counts))
+    (parallel-do! compute-average [:strings :ints])
     (to/text-file output-path)))
