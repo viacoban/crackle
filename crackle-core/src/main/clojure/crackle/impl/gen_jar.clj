@@ -45,6 +45,9 @@
       (.endsWith file-path ".jar") true
       :else false)))
 
+(defn snapshot-jar? [url]
+  (.endsWith (str url) "-SNAPSHOT.jar"))
+
 (defn find-classpath-entries []
   (loop [class-loader (.getContextClassLoader (Thread/currentThread))
          entries []]
@@ -59,6 +62,9 @@
       (cond
         (not (.exists entry-file))
         (debug "unexpected classpath entry" entry)
+
+        (snapshot-jar? entry)
+        (DistCache/addJarToDistributedCache configuration entry)
 
         (jar-to-include? entry)
         (let [src-path (Path. (.getCanonicalPath entry-file))
