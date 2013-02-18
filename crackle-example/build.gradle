@@ -2,11 +2,11 @@ dependencies {
   compile project(':crackle-core')
   compile project(':crackle-hbase')
 
-  compile 'org.apache.hadoop:hadoop-core:0.20.2-cdh3u2'
-  compile 'org.apache.hbase:hbase:0.90.4-cdh3u2'
+  compile 'org.apache.hadoop:hadoop-client:2.0.0-mr1-cdh4.1.2'
+  compile 'org.apache.hbase:hbase:0.92.1-cdh4.1.2'
 
-  runtime files("${System.getenv('HADOOP_HOME')}/conf")
-  runtime files("${System.getenv('HBASE_HOME')}/conf")
+  runtime files('/etc/hadoop/conf')
+  runtime files('/etc/hbase/conf')
 
   runtime 'log4j:log4j:1.2.17'
 }

@@ -68,20 +68,21 @@
   {:pre [(:name do-fn)
          (:result-type do-fn)
          (:instance do-fn)
-         (isa? (:instance do-fn) DoFn)]}
+         (isa? (class (:instance do-fn)) org.apache.crunch.DoFn)]}
   (fn [^PCollection pcoll]
-    (.parallelDo pcoll (:name do-fn) (:instance do-fn) (global-type-resolver (:result-type do-fn)))))
+    (.parallelDo pcoll (:name do-fn) (:instance do-fn)
+      (eval (global-type-resolver (:result-type do-fn))))))
 
 (defn combine-values! [combine-fn]
   {:pre [(:instance combine-fn)
-         (isa? (:instance combine-fn) CombineFn)]}
+         (isa? (class (:instance combine-fn)) CombineFn)]}
   (fn [^PGroupedTable pcoll]
     (.combineValues pcoll (:instance combine-fn))))
 
 (defn filter! [filter-fn]
   {:pre [(:name filter-fn)
          (:instance filter-fn)
-         (isa? (:instance filter-fn) FilterFn)]}
+         (isa? (class (:instance filter-fn)) FilterFn)]}
   (fn [^PCollection pcoll]
     (.filter pcoll (:name filter-fn) (:instance filter-fn))))
 
