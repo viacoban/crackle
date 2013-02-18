@@ -17,7 +17,7 @@
 (defn generate-internal-fn [wrapper-class fn-name result-type primary-args extra-args impl-body]
   (let [internal-fn-name# (symbol (str fn-name "-internal"))
         internal-fn-name-symbol# `(var ~internal-fn-name#)
-        args# (into [] (concat primary-args extra-args))]
+        args# (conj primary-args extra-args)]
     `(do
        (defn ~internal-fn-name# ~args# ~impl-body)
        (defn ~fn-name ~extra-args
