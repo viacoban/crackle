@@ -1,6 +1,6 @@
 > **Clojure aphorism**:
-> Clojure programmers don’t write their apps in Clojure.
-> They write the language that they use to write their apps in Clojure.
+> Clojure programmers don’t write their apps in Clojure.  
+> They write the language that they use to write their apps in Clojure.  
 >
 >  _"The Joy of Clojure"_
 
@@ -37,18 +37,18 @@ with Maven:
   (:require [crackle.to :as to]))
 
 ;====== word count example ===============
-(defn-mapcat split-words [regexp] :strings
-  (fn [line] (clojure.string/split line regexp)))
+(defn-mapcat split-words [] :strings
+  (fn [line] (clojure.string/split line #"\s+")))
 
 (defn count-words [input-path output-path]
   (do-pipeline :debug
     (from/text-file input-path)
-    (parallel-do! (split-words #"\s+"))
+    (parallel-do! (split-words))
     (count!)
     (to/text-file output-path)))
 
 ;;====== average bytes by ip example ======
-(defn-mapcat parse-line [regexp] [:strings :clojure]
+(defn-map parse-line [regexp] [:strings :clojure]
   (fn [line]
     (let [[address bytes] (clojure.string/split line regexp)]
       (pair-of address [(read-string bytes) 1]))))
@@ -67,7 +67,7 @@ with Maven:
     (parallel-do! (parse-line #"\s+"))
     (group-by-key!)
     (combine-values! (sum-bytes-and-counts))
-    (parallel-do! (compute-average))
+    (parallel-do! (compute-average) :as averages)
     (to/text-file output-path)))
 
 ```

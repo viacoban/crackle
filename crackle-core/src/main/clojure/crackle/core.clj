@@ -25,7 +25,7 @@
   (generate-internal-fn crackle.fn.FilterFnWrapper name nil [item] args impl-body))
 
 (defmacro defn-combine [ name args [_ [value1 value2] impl-body] ]
-  (generate-internal-fn crackle.fn.CombineFnWrapper name nil [value1 value2] args impl-body))
+  (generate-internal-fn crackle.fn.CombineFnWrapper name nil [value1 value2] nil impl-body))
 
 (defn count! []
   (fn [^PCollection pcoll] (Aggregate/count pcoll)))
@@ -73,7 +73,7 @@
          (:result-type do-fn)
          (:instance do-fn)
          (isa? (class (:instance do-fn)) org.apache.crunch.DoFn)]}
-  (fn [^PCollection pcoll]
+  (fn [pcoll]
     (.parallelDo pcoll (:name do-fn) (:instance do-fn)
       (eval (global-type-resolver (:result-type do-fn))))))
 
@@ -102,8 +102,13 @@
             from-sym (get opts :with previous-sym)]
         (recur to-sym (rest more) (concat result [to-sym (list call from-sym)]))))))
 
-(defn when* [cond? & body]
-  (if cond? (apply comp body) identity))
+(defmacro when* [cond form]
+  `(if-not ~cond identity ~form))
+
+(defn materialize-seq [pcoll]
+  (->> pcoll
+    (.materialize)
+    (seq)))
 
 (defmacro do-pipeline [& body]
   (let [opts (set (filter keyword? body))

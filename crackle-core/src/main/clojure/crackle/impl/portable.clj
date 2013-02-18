@@ -19,8 +19,8 @@
         internal-fn-name-symbol# `(var ~internal-fn-name#)
         args# (conj primary-args extra-args)]
     `(do
-       (defn ~internal-fn-name# ~args# ~impl-body)
-       (defn ~fn-name ~extra-args
+       (defn ~internal-fn-name# ~(filterv identity args#) ~impl-body)
+       (defn ~fn-name ~(filterv identity extra-args)
          {:name ~(str fn-name)
           :result-type ~result-type
           :instance (new ~wrapper-class (pfn ~internal-fn-name-symbol#) (pargs ~extra-args))}))))
