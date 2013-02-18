@@ -4,13 +4,13 @@
   (:require [crackle.to :as to]))
 
 ;====== word count example ===============
-(defn-mapcat split-words [regexp] :strings
-  (fn [line] (clojure.string/split line regexp)))
+(defn-mapcat split-words [] :strings
+  (fn [line] (clojure.string/split line #"\s+")))
 
 (defn count-words [input-path output-path]
   (do-pipeline :debug
     (from/text-file input-path)
-    (parallel-do! (split-words #"\s+"))
+    (parallel-do! (split-words))
     (count!)
     (to/text-file output-path)))
 
