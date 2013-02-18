@@ -1,5 +1,7 @@
 package crackle.fn;
 
+import clojure.lang.Namespace;
+import clojure.lang.Symbol;
 import org.apache.crunch.CombineFn;
 import org.apache.crunch.Emitter;
 import org.apache.crunch.Pair;
@@ -9,8 +11,11 @@ public final class CombineFnWrapper extends CombineFn<Object, Object> {
   private final PortableFn reduceFn;
   private final PortableFn combineFn;
 
-  public CombineFnWrapper(PortableFn reduceFn, PortableFn combineFn) {
-    this.reduceFn = reduceFn;
+  public CombineFnWrapper(PortableFn combineFn, PortableFnArgs args) {
+    this.reduceFn = new PortableFnVar(
+      Namespace.find(Symbol.create("clojure.core")),
+      Symbol.create("clojure.core", "reduce")
+    );
     this.combineFn = combineFn;
   }
 

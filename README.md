@@ -15,7 +15,7 @@ Crackle is available on [Clojars](https://clojars.org/), please report any issue
 with Leiningen:
 
 ```clj
-[crackle/crackle-core "0.4.2"]
+[crackle/crackle-core "0.5.0"]
 ```
 
 with Maven:
@@ -24,7 +24,7 @@ with Maven:
 <dependency>
  <groupId>crackle</groupId>
  <artifactId>crackle-core</artifactId>
- <version>0.4.2</version>
+ <version>0.5.0</version>
 </dependency>
 ```
 
@@ -34,36 +34,40 @@ with Maven:
 (ns crackle.example
   (:use crackle.core)
   (:require [crackle.from :as from])
-  (:require [crackle.to :as to])
-  (:require [crackle.ops :as op]))
+  (:require [crackle.to :as to]))
 
 ;====== word count example ===============
-(fn-mapcat split-words [line re] :strings
-  (clojure.string/split line re))
+(defn-mapcat split-words [] :strings
+  (fn [line] (clojure.string/split line #"\s+")))
 
 (defn count-words [input-path output-path]
-  (do-pipeline (from/text-file input-path) :debug
-    (split-words #"\s+")
-    (op/count)
+  (do-pipeline :debug
+    (from/text-file input-path)
+    (parallel-do! (split-words))
+    (count!)
     (to/text-file output-path)))
 
-;====== average bytes by ip example ======
-(fn-map parse-line [line] [:strings :clojure]
-  (let [[address bytes] (clojure.string/split line #"\s+")]
-    (pair-of address [(read-string bytes) 1])))
+;;====== average bytes by ip example ======
+(defn-map parse-line [regexp] [:strings :clojure]
+  (fn [line]
+    (let [[address bytes] (clojure.string/split line regexp)]
+      (pair-of address [(read-string bytes) 1]))))
 
-(fn-combine sum-bytes-and-counts [value1 value2]
-  (mapv + value1 value2))
+(defn-combine sum-bytes-and-counts []
+  (fn [value1 value2]
+    (mapv + value1 value2)))
 
-(fn-mapv compute-average [[bytes requests]] :ints
-  (int (/ bytes requests)))
+(defn-mapv compute-average [] [:strings :ints]
+  (fn [[bytes requests]]
+    (int (/ bytes requests))))
 
 (defn count-bytes-by-ip [input-path output-path]
-  (do-pipeline (from/text-file input-path)
-    (parse-line)
-    (op/group-by-key)
-    (sum-bytes-and-counts)
-    (compute-average)
+  (do-pipeline
+    (from/text-file input-path)
+    (parallel-do! (parse-line #"\s+"))
+    (group-by-key!)
+    (combine-values! (sum-bytes-and-counts))
+    (parallel-do! (compute-average) :as averages)
     (to/text-file output-path)))
 
 ```
