@@ -64,7 +64,7 @@
         (debug "unexpected classpath entry" entry)
 
         (snapshot-jar? entry)
-        (DistCache/addJarToDistributedCache configuration entry)
+        (DistCache/addJarToDistributedCache configuration entry-file)
 
         (jar-to-include? entry)
         (let [src-path (Path. (.getCanonicalPath entry-file))
