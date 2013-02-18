@@ -40,6 +40,10 @@
   (fn [^PCollection pcoll]
     (Sort/sort pcoll (if ascending? (Sort$Order/ASCENDING) (Sort$Order/DESCENDING)))))
 
+(defn sort-by-key! [ascending?]
+  (fn [^PTable pcoll]
+    (Sort/sort pcoll (if ascending? (Sort$Order/ASCENDING) (Sort$Order/DESCENDING)))))
+
 (defn top! [limit]
   (fn [^PTable pcoll] (Aggregate/top pcoll limit true)))
 
