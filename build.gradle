@@ -14,7 +14,7 @@ ext.hbaseVersion = 'org.apache.hbase:hbase:0.90.6-cdh3u5'
 
 subprojects {
   group = 'crackle'
-  version = '0.5.0'
+  version = '0.5.1'
 
   apply plugin: 'java'
   apply plugin: 'clojure'
@@ -41,6 +41,7 @@ subprojects {
 
   dependencies {
     compile 'org.clojure:clojure:1.4.0'
+    compile 'org.clojure:tools.logging:0.2.6'
   }
 
   idea {
