@@ -1,8 +1,8 @@
 (ns crackle.core
-  (:use crackle.impl.debug)
   (:use crackle.impl.types)
   (:use crackle.impl.portable)
   (:use crackle.impl.gen-jar)
+  (:use [clojure.tools.logging :only [info error debug]])
   (:import [org.apache.crunch PCollection PTable DoFn PGroupedTable CombineFn FilterFn]
            [org.apache.crunch.lib Aggregate Sort Sort$Order Sample PTables]))
 
@@ -71,24 +71,28 @@
 (defn parallel-do! [do-fn]
   {:pre [(:name do-fn)
          (:result-type do-fn)
-         (:instance do-fn)
          (isa? (class (:instance do-fn)) org.apache.crunch.DoFn)]}
   (fn [pcoll]
     (.parallelDo pcoll (:name do-fn) (:instance do-fn)
       (eval (global-type-resolver (:result-type do-fn))))))
 
 (defn combine-values! [combine-fn]
-  {:pre [(:instance combine-fn)
-         (isa? (class (:instance combine-fn)) CombineFn)]}
+  {:pre [(isa? (class (:instance combine-fn)) CombineFn)]}
   (fn [^PGroupedTable pcoll]
     (.combineValues pcoll (:instance combine-fn))))
 
 (defn filter! [filter-fn]
-  {:pre [(:name filter-fn)
-         (:instance filter-fn)
-         (isa? (class (:instance filter-fn)) FilterFn)]}
+  {:pre [(:name filter-fn) (isa? (class (:instance filter-fn)) FilterFn)]}
   (fn [^PCollection pcoll]
     (.filter pcoll (:name filter-fn) (:instance filter-fn))))
+
+(defn by! [map-fn]
+  {:pre [(:name map-fn)
+         (:result-type map-fn)
+         (isa? (class (:instance map-fn)) org.apache.crunch.MapFn)]}
+  (fn [^PCollection pcoll]
+    (.by pcoll (:name map-fn) (:instance map-fn)
+      (eval (global-type-resolver (:result-type map-fn))))))
 
 (defn- expand-pipeline-forms [source-sym forms]
   (loop [previous-sym source-sym
@@ -106,9 +110,12 @@
   `(if-not ~cond identity ~form))
 
 (defn materialize-seq [pcoll]
-  (->> pcoll
-    (.materialize)
-    (seq)))
+  (try
+    (->> pcoll
+      (.materialize)
+      (seq))
+    (catch Exception ex
+      (error "Error materializing " pcoll ex))))
 
 (defmacro do-pipeline [& body]
   (let [opts (set (filter keyword? body))
@@ -116,18 +123,16 @@
         forms (filter seq? body)
         source-fn (first forms)
         in-memory? (contains? opts :mem )
-        debug? (contains? opts :debug )
         pipeline-sym (gensym "pipeline-")
         source-sym (gensym "source-")
         pipeline-forms (expand-pipeline-forms source-sym (rest forms))
         last-result (first (take-last 2 pipeline-forms))]
 
-    (binding [DEBUG-ON (or debug? DEBUG-ON)]
-      (debug "forms" forms)
-      (debug "result" result)
-      (debug "opts" opts)
-      (debug "source" source-fn)
-      (debug "body" body))
+    (debug "forms" forms)
+    (debug "result" result)
+    (debug "opts" opts)
+    (debug "source" source-fn)
+    (debug "body" body)
 
     `(binding [*compile-path* (get-temp-dir)]
        ~(when-not in-memory?
@@ -136,7 +141,6 @@
        (let [~pipeline-sym (crackle.pipeline.PipelineFactory/getPipeline ~in-memory?)
              ~source-sym (~source-fn ~pipeline-sym)
              ~@pipeline-forms]
-         ~(when debug? `(.enableDebug ~pipeline-sym))
          ~(when-not in-memory? `(setup-job-dependencies ~pipeline-sym))
          (.done ~pipeline-sym)
          ~(if (empty? result) last-result result)))))

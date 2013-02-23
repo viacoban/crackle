@@ -1,9 +1,0 @@
-dependencies {
-  compile project(':crackle-core')
-  compile project(':crackle-hbase')
-
-  runtime hadoopVersion
-  runtime hbaseVersion
-
-  runtime 'log4j:log4j:1.2.17'
-}
