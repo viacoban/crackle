@@ -1,7 +1,0 @@
-dependencies {
-  compile project(':crackle-core')
-  compile 'org.apache.crunch:crunch-hbase:0.4.0-incubating'
-
-  provided hadoopVersion
-  provided hbaseVersion
-}

@@ -8,7 +8,7 @@
   (fn [line] (clojure.string/split line #"\s+")))
 
 (defn count-words [input-path output-path]
-  (do-pipeline :debug
+  (do-pipeline
     (from/text-file input-path)
     (parallel-do! (split-words))
     (count!)
@@ -34,5 +34,5 @@
     (parallel-do! (parse-line #"\s+"))
     (group-by-key!)
     (combine-values! (sum-bytes-and-counts))
-    (parallel-do! (compute-average) :as averages)
+    (parallel-do! (compute-average))
     (to/text-file output-path)))

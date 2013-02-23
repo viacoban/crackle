@@ -15,7 +15,7 @@ Crackle is available on [Clojars](https://clojars.org/), please report any issue
 with Leiningen:
 
 ```clj
-[crackle/crackle-core "0.5.0"]
+[crackle/crackle-core "0.5.2"]
 ```
 
 with Maven:
@@ -24,7 +24,7 @@ with Maven:
 <dependency>
  <groupId>crackle</groupId>
  <artifactId>crackle-core</artifactId>
- <version>0.5.0</version>
+ <version>0.5.2</version>
 </dependency>
 ```
 
@@ -67,7 +67,7 @@ with Maven:
     (parallel-do! (parse-line #"\s+"))
     (group-by-key!)
     (combine-values! (sum-bytes-and-counts))
-    (parallel-do! (compute-average) :as averages)
+    (parallel-do! (compute-average))
     (to/text-file output-path)))
 
 ```

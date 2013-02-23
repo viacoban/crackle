@@ -1,6 +1,6 @@
 (ns crackle.impl.gen-jar
-  (:use crackle.impl.debug)
   (:require [clojure.java.io :as io])
+  (:use [clojure.tools.logging :only [info error debug]])
   (:import [org.apache.crunch Pipeline])
   (:import [org.apache.crunch.util DistCache])
   (:import [org.apache.commons.io IOUtils FileUtils])
@@ -10,7 +10,9 @@
   (:import [java.util.jar JarOutputStream JarEntry]))
 
 (def ^:dynamic crackle-tmp-root "/tmp")
+
 (def libs-dir-property "crackle.job.deps.dir")
+
 (def ^:dynamic *cached-libs-dir*
   (str "/tmp/" (System/getProperty "user.name") "/cache/libs/"))
 
