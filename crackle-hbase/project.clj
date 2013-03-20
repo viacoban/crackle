@@ -1,4 +1,4 @@
-(defproject crackle/crackle-hbase "0.5.3"
+(defproject crackle/crackle-hbase "0.5.4"
   :description "HBase support for crackle-core"
   :url "https://github.com/viacoban/crackle"
 
@@ -16,7 +16,9 @@
 
   :repositories [["cloudera" "https://repository.cloudera.com/artifactory/cloudera-repos"]]
 
+  :plugins [[lein-clojars "0.9.1"]]
+
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [crackle/crackle-core "0.5.3"]
+                 [crackle/crackle-core "0.5.4"]
                  [org.apache.crunch/crunch-hbase "0.5.0-cdh4.1.3"]
                  [org.apache.hbase/hbase "0.92.1-cdh4.1.3"]])

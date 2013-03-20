@@ -7,10 +7,10 @@
 (defn-mapcat split-words [regexp] :strings
   (fn [line] (clojure.string/split line regexp)))
 
-(defn count-words [input-path output-path & {:keys [regexp] :or {regexp #"\s+"}}]
+(defn count-words [input-path output-path]
   (do-pipeline
     (from/text-file input-path)
-    (parallel-do! (split-words regexp))
+    (parallel-do! (split-words #"\s+"))
     (count!)
     (to/text-file output-path)))
 

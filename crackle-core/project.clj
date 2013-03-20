@@ -1,4 +1,4 @@
-(defproject crackle/crackle-core "0.5.3"
+(defproject crackle/crackle-core "0.5.4"
   :description "Clojure wrapper for Apache Crunch"
   :url "https://github.com/viacoban/crackle"
 
@@ -15,6 +15,8 @@
   :java-source-paths["src/main/java"]
 
   :repositories [["cloudera" "https://repository.cloudera.com/artifactory/cloudera-repos"]]
+
+  :plugins [[lein-clojars "0.9.1"]]
 
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/tools.logging "0.2.6"]

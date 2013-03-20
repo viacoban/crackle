@@ -1,4 +1,4 @@
-(defproject crackle/crackle-example "0.5.3"
+(defproject crackle/crackle-example "0.5.4"
   :description "Some examples for crackle"
   :url "https://github.com/viacoban/crackle"
 
@@ -15,4 +15,4 @@
   :java-source-paths["src/main/java"]
 
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [crackle/crackle-core "0.5.3"]])
+                 [crackle/crackle-core "0.5.4"]])

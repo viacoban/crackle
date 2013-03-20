@@ -1,4 +1,4 @@
-(defproject crackle "0.5.3"
+(defproject crackle "0.5.4"
   :description "Clojure wrapper for Apache Crunch"
   :url "https://github.com/viacoban/crackle"
 
@@ -9,12 +9,6 @@
 
   :min-lein-version "2.0.0"
 
-  :profiles {:build {:dependencies
-                     [[crackle/crackle-core "0.5.3"]
-                      [crackle/crackle-hbase "0.5.3"]
-                      [crackle/crackle-example "0.5.3"]]}}
-
-  :plugins [[lein-sub "0.2.4"]
-            [lein-clojars "0.9.1"]]
+  :plugins [[lein-sub "0.2.4"]]
 
   :sub ["crackle-core" "crackle-hbase" "crackle-example"])
