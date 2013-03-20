@@ -2,7 +2,11 @@
 build/
 lib/
 out/
+target/
 
 *.iml
 *.ipr
 *.iws
+
+.lein-*
+pom.xml

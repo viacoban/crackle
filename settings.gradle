@@ -1,3 +1,0 @@
-include 'crackle-core'
-include 'crackle-hbase'
-include 'crackle-example'
