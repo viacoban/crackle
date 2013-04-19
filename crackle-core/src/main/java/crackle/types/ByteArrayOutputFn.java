@@ -1,9 +1,9 @@
-package org.apache.crunch.types.writable;
+package crackle.types;
 
 import org.apache.crunch.MapFn;
 import org.apache.hadoop.io.BytesWritable;
 
-public class ByteArrayOutputFn extends MapFn<byte[], BytesWritable> {
+public final class ByteArrayOutputFn extends MapFn<byte[], BytesWritable> {
 
   private transient BytesWritable writable;
 

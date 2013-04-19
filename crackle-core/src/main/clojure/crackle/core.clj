@@ -106,8 +106,9 @@
             from-sym (get opts :with previous-sym)]
         (recur to-sym (rest more) (concat result [to-sym (list call from-sym)]))))))
 
-(defmacro when* [cond form]
-  `(if-not ~cond identity ~form))
+(defmacro when* [cond & forms]
+  `(if-not ~cond identity
+     (comp ~@(reverse forms))))
 
 (defn materialize-seq [pcoll]
   (try

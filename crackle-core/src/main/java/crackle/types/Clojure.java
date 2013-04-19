@@ -8,7 +8,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import org.apache.crunch.MapFn;
 import org.apache.crunch.types.PType;
-import org.apache.crunch.types.writable.ByteArrayWritableType;
 import org.apache.crunch.types.writable.Writables;
 
 public final class Clojure {
