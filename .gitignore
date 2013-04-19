@@ -1,8 +1,10 @@
-.gradle/
-build/
-lib/
 out/
+target/
+
+.lein-*
+pom.xml
 
 *.iml
 *.ipr
 *.iws
+
